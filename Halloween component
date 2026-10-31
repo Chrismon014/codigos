@@ -1,0 +1,230 @@
+-- Script Path: game:GetService("ReplicatedStorage").client.components.HalloweenWheelComponent
+-- Took 0s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+local v1 = game:GetService("Players")
+local v_u_2 = game:GetService("RunService")
+local v3 = require("@game/ReplicatedStorage/packages/Component")
+local v4 = require("@game/ReplicatedStorage/packages/Signal")
+local v_u_5 = require("@game/ReplicatedStorage/packages/Trove")
+local v_u_6 = require("@game/ReplicatedStorage/shared/config/HalloweenWheelConfig")
+local v_u_7 = require("@game/ReplicatedStorage/shared/modules/PetEnchant")
+local v_u_8 = require("@game/ReplicatedStorage/shared/modules/Souls")
+local v_u_9 = v1.LocalPlayer
+local v_u_10 = UDim2.fromScale(0.5, 0.24)
+local v_u_11 = UDim2.fromScale(2, 0.34)
+local v_u_12 = v3.new({
+    ["Tag"] = v_u_6.WHEEL_TAG,
+    ["Ancestors"] = { workspace }
+})
+v_u_12.Triggered = v4.new()
+function v_u_12.Construct(p13) -- name: Construct
+    -- upvalues: (copy) v_u_5
+    p13._trove = v_u_5.new()
+    p13._prompt = nil
+    p13._promptAnchor = nil
+    p13._promptFollower = nil
+    p13._reachElapsed = 0.25
+end
+function v_u_12.Start(p14) -- name: Start
+    -- upvalues: (copy) v_u_2, (copy) v_u_10, (copy) v_u_11, (copy) v_u_8, (copy) v_u_9, (copy) v_u_6, (copy) v_u_12
+    local v_u_15 = p14._trove
+    local v16 = p14.Instance
+    local v17 = v16:FindFirstChild("Spinner")
+    local v_u_18
+    if v17 == nil or not v17:IsA("Model") then
+        v_u_18 = nil
+    else
+        v_u_18 = v17.PrimaryPart
+    end
+    if v17 ~= nil and v_u_18 ~= nil then
+        local v_u_19 = v_u_18.CFrame
+        local v_u_20 = {}
+        local v21 = v17:FindFirstChild("Items")
+        if v21 ~= nil then
+            for _, v22 in v21:GetChildren() do
+                if not v22:IsA("PVInstance") then
+                    continue
+                end
+                local v23 = v22:GetPivot()
+                local v24
+                if v22:IsA("Model") then
+                    v24 = v22:GetBoundingBox().Position
+                else
+                    v24 = v23.Position
+                end
+                local v25 = {
+                    ["Item"] = v22,
+                    ["Home"] = v23,
+                    ["Offset"] = v_u_19:PointToObjectSpace(v24),
+                    ["PivotFromCentre"] = v23.Position - v24
+                }
+                table.insert(v_u_20, v25)
+            end
+        end
+        local v_u_26 = 0
+        v_u_15:Connect(v_u_2.RenderStepped, function(p27)
+            -- upvalues: (copy) v_u_19, (ref) v_u_26, (copy) v_u_18, (copy) v_u_20
+            local v28 = workspace.CurrentCamera
+            if v28 ~= nil and (v28.CFrame.Position - v_u_19.Position).Magnitude <= 800 then
+                v_u_26 = (v_u_26 + p27 * 0.20943951023931956) % 6.283185307179586
+                local v29 = v_u_19 * CFrame.Angles(0, 0, v_u_26)
+                v_u_18.CFrame = v29
+                for _, v30 in v_u_20 do
+                    v30.Item:PivotTo(v30.Home.Rotation + v29:PointToWorldSpace(v30.Offset) + v30.PivotFromCentre)
+                end
+            end
+        end)
+        v_u_15:Add(function()
+            -- upvalues: (copy) v_u_18, (copy) v_u_19, (copy) v_u_20
+            v_u_18.CFrame = v_u_19
+            for _, v31 in v_u_20 do
+                v31.Item:PivotTo(v31.Home)
+            end
+        end)
+    end
+    local v32 = v16:FindFirstChild("nameGui", true)
+    local v33
+    if v32 == nil or not v32:IsA("BillboardGui") then
+        v33 = nil
+    else
+        v33 = v32:FindFirstChildWhichIsA("TextLabel")
+    end
+    if v32 ~= nil and v33 ~= nil then
+        local v_u_34 = Instance.new("TextLabel")
+        v_u_34.Name = "SoulsLabel"
+        v_u_34.AnchorPoint = Vector2.new(0.5, 0)
+        v_u_34.Position = v_u_10
+        v_u_34.Size = v_u_11
+        v_u_34.BackgroundTransparency = 1
+        v_u_34.FontFace = v33.FontFace
+        v_u_34.TextColor3 = Color3.new(1, 1, 1)
+        v_u_34.TextScaled = true
+        v_u_34.ZIndex = v33.ZIndex
+        local v35 = v33:FindFirstChildOfClass("UIStroke")
+        if v35 ~= nil then
+            v35:Clone().Parent = v_u_34
+        end
+        local function v_u_37() -- name: paintSouls
+            -- upvalues: (ref) v_u_8, (ref) v_u_9, (copy) v_u_34
+            local v36 = v_u_8.Get(v_u_9)
+            v_u_34.Text = ("You have %* %*"):format(v36, v36 == 1 and "Soul" or "Souls")
+        end
+        local v38 = v_u_8.Get(v_u_9)
+        v_u_34.Text = ("You have %* %*"):format(v38, v38 == 1 and "Soul" or "Souls")
+        v_u_34.Parent = v32
+        v_u_15:Add(v_u_34)
+        v_u_15:Add(task.spawn(function()
+            -- upvalues: (ref) v_u_9, (ref) v_u_8, (copy) v_u_34, (copy) v_u_15, (copy) v_u_37
+            local v39 = v_u_9:WaitForChild(v_u_8.WALLET_NAME, 30)
+            if v39 ~= nil and (v39:IsA("NumberValue") or v39:IsA("IntValue")) then
+                local v40 = v_u_8.Get(v_u_9)
+                v_u_34.Text = ("You have %* %*"):format(v40, v40 == 1 and "Soul" or "Souls")
+                v_u_15:Connect(v39.Changed, v_u_37)
+            end
+        end))
+    end
+    local v41 = v16:FindFirstChild("PromptAttachment", true)
+    local v42
+    if v16:IsA("BasePart") then
+        v42 = v16
+    else
+        v42 = v16:FindFirstChildWhichIsA("BasePart", true)
+    end
+    if v41 ~= nil and (v41:IsA("Attachment") and v41.Parent ~= nil) then
+        v42 = Instance.new("Attachment")
+        v42.Name = "PromptFollower"
+        v42.Parent = v41.Parent
+        v42.WorldPosition = v41.WorldPosition
+        v_u_15:Add(v42)
+        p14._promptAnchor = v41
+        p14._promptFollower = v42
+    end
+    if v42 == nil then
+        warn((("[HalloweenWheel] Tagged wheel \'%*\' has no BasePart for its prompt"):format((v16:GetFullName()))))
+    else
+        local v43 = Instance.new("ProximityPrompt")
+        v43.Name = v_u_6.WHEEL_PROMPT_NAME
+        v43.ActionText = v_u_6.WHEEL_PROMPT_TEXT
+        v43.RequiresLineOfSight = false
+        v43.MaxActivationDistance = v_u_6.WHEEL_PROMPT_ACTIVATION_DISTANCE
+        v43.Enabled = false
+        v43.Parent = v42
+        v_u_15:Add(v43)
+        v_u_15:Connect(v43.Triggered, function(p44)
+            -- upvalues: (ref) v_u_9, (ref) v_u_12
+            if p44 == v_u_9 then
+                v_u_12.Triggered:Fire()
+            end
+        end)
+        p14._prompt = v43
+    end
+end
+function v_u_12.Stop(p45) -- name: Stop
+    p45._trove:Destroy()
+end
+function v_u_12.IsWithinReach(p46, p47) -- name: IsWithinReach
+    -- upvalues: (copy) v_u_9, (copy) v_u_7
+    local v48 = p46:GetInteractPosition()
+    local v49 = v_u_9.Character
+    local v50
+    if v49 == nil then
+        v50 = nil
+    else
+        v50 = v49:FindFirstChild("HumanoidRootPart")
+    end
+    if v48 == nil or (v50 == nil or not v50:IsA("BasePart")) then
+        return false
+    else
+        return v_u_7.IsWithinReach(v50, v48, p47, v_u_7.GetHeightScale(v49))
+    end
+end
+function v_u_12.HeartbeatUpdate(p51, p52) -- name: HeartbeatUpdate
+    -- upvalues: (copy) v_u_9, (copy) v_u_6
+    p51._reachElapsed = p51._reachElapsed + p52
+    if p51._reachElapsed >= 0.25 then
+        p51._reachElapsed = 0
+        local v53 = p51._promptAnchor
+        local v54 = p51._promptFollower
+        if v53 ~= nil and v54 ~= nil then
+            local v55 = v_u_9.Character
+            local v56
+            if v55 == nil then
+                v56 = nil
+            else
+                v56 = v55:FindFirstChild("HumanoidRootPart")
+            end
+            local v57 = v53.WorldPosition
+            local v58 = v57.Y
+            if v56 ~= nil and (v56:IsA("BasePart") and v56.Position.Y - v57.Y > 20) then
+                v58 = v56.Position.Y
+            end
+            local v59 = v57.X
+            local v60 = v57.Z
+            v54.WorldPosition = Vector3.new(v59, v58, v60)
+        end
+        local v61 = p51._prompt
+        if v61 ~= nil and v61.Parent ~= nil then
+            v61.Enabled = p51:IsWithinReach(v_u_6.WHEEL_PROMPT_DISTANCE)
+        end
+    end
+end
+function v_u_12.GetInteractPosition(p62) -- name: GetInteractPosition
+    local v63 = p62.Instance
+    if v63:IsA("PVInstance") and v63:IsDescendantOf(workspace) then
+        return v63:GetPivot().Position
+    else
+        return nil
+    end
+end
+function v_u_12.IsPlayerNear(_) -- name: IsPlayerNear
+    -- upvalues: (copy) v_u_12, (copy) v_u_6
+    for _, v64 in v_u_12:GetAll() do
+        if not v64:IsWithinReach(v_u_6.WHEEL_INTERACT_DISTANCE) then
+            continue
+        end
+        return true
+    end
+    return false
+end
+return v_u_12
