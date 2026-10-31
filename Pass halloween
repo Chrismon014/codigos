@@ -1,0 +1,2137 @@
+-- Script Path: game:GetService("ReplicatedStorage").client.controllers.HalloweenPassController
+-- Took 0.17s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+local v_u_1 = game:GetService("MarketplaceService")
+local v2 = game:GetService("Players")
+local v_u_3 = game:GetService("ReplicatedStorage")
+local v_u_4 = game:GetService("RunService")
+local v_u_5 = require("@game/ReplicatedStorage/packages/ReplicatorClient")
+local v_u_6 = require("@game/ReplicatedStorage/shared/modules/HalloweenPass")
+local v_u_7 = require("@game/ReplicatedStorage/shared/config/HalloweenPassConfig")
+local v_u_8 = require("@game/ReplicatedStorage/shared/config/ExclusiveEggConfig")
+local v_u_9 = require("@game/ReplicatedStorage/shared/modules/DailyReward")
+local v_u_10 = require("@game/ReplicatedStorage/shared/modules/GlobalFunctions")
+local v_u_11 = require("@game/ReplicatedStorage/client/controllers/MenuController")
+local v_u_12 = require("@game/ReplicatedStorage/client/utils/ButtonFeel")
+local v_u_13 = require("@game/ReplicatedStorage/client/utils/GuiToast")
+local v_u_14 = require("@game/ReplicatedStorage/client/utils/HudRefs")
+local v_u_15 = require("@game/ReplicatedStorage/client/utils/PetStyle")
+local v_u_16 = require("@game/ReplicatedStorage/client/utils/RewardIcon")
+local v_u_17 = require("@game/ReplicatedStorage/shared/strongbloxian/Gym")
+local v_u_18 = Color3.new(1, 1, 1)
+local v_u_19 = Color3.fromRGB(130, 130, 130)
+local v_u_20 = Color3.fromRGB(130, 130, 130)
+local v_u_21 = Color3.fromRGB(255, 140, 30)
+local v_u_22 = table.freeze({
+    ["busy"] = "Slow down a moment.",
+    ["rateLimited"] = "Slow down a moment.",
+    ["notReady"] = "Your data is still loading.",
+    ["disabled"] = "The Spooky Pass is unavailable.",
+    ["inactive"] = "The Spooky Pass has ended.",
+    ["invalidTier"] = "That tier is no longer available.",
+    ["locked"] = "That reward is still locked.",
+    ["claimed"] = "You already claimed that.",
+    ["noProfile"] = "Your data is still loading.",
+    ["invalidQuest"] = "That quest is no longer available.",
+    ["missingQuest"] = "That quest is no longer available.",
+    ["incomplete"] = "Finish that quest first.",
+    ["notMaxTier"] = "Reach the last tier first.",
+    ["NoInventory"] = "Your inventory is full.",
+    ["grantFailed"] = "Could not grant that reward. Try again.",
+    ["invalidAction"] = "Something went wrong. Try again.",
+    ["UnknownPet"] = "That reward is not available.",
+    ["UnknownItem"] = "That reward is not available.",
+    ["UnknownType"] = "That reward is not available.",
+    ["UnknownAura"] = "That reward is not available.",
+    ["UnknownBoost"] = "That reward is not available."
+})
+local v_u_23 = v2.LocalPlayer
+local v_u_24 = v_u_23.PlayerGui
+local v25 = v_u_3.shared.assets.sounds
+local v_u_26 = v25.clickSound
+local v_u_27 = v25.deniedSound
+local v_u_28 = false
+local v_u_29 = false
+local v_u_30 = false
+local v_u_31 = false
+local v_u_32 = nil
+local v_u_33 = nil
+local v_u_34 = 0
+local v_u_35 = 0
+local v_u_36 = {}
+local v_u_37 = nil
+local v_u_38 = nil
+local v_u_39 = nil
+local v_u_40 = nil
+local v_u_41 = nil
+local v_u_42 = nil
+local v_u_43 = nil
+local v_u_44 = nil
+local v_u_45 = nil
+local v_u_46 = nil
+local v_u_47 = ""
+local v_u_48 = nil
+local v_u_49 = nil
+local v_u_50 = nil
+local v_u_51 = nil
+local v_u_52 = nil
+local v_u_53 = nil
+local v_u_54 = nil
+local v_u_55 = nil
+local v_u_56 = nil
+local v_u_57 = nil
+local v_u_58 = nil
+local v_u_59 = UDim2.fromScale(0.5, 0.34)
+local v_u_60 = nil
+local v_u_61 = 0
+local v_u_62 = {}
+local v_u_63 = {}
+local v_u_64 = {}
+local v_u_65 = {}
+local v_u_66 = {}
+local v_u_67 = {}
+local v_u_68 = {}
+local v69 = {}
+local function v_u_73(p70, p71) -- name: findPath
+    if p70 == nil then
+        return nil
+    end
+    for _, v72 in string.split(p71, "/") do
+        p70 = p70:FindFirstChild(v72)
+        if p70 ~= nil then
+            continue
+        end
+        return nil
+    end
+    return p70
+end
+local function v_u_81(p_u_74, p_u_75) -- name: invoke
+    -- upvalues: (ref) v_u_32, (copy) v_u_3, (copy) v_u_7, (ref) v_u_29
+    local v_u_76
+    if v_u_32 == nil then
+        local v77 = v_u_3:FindFirstChild("rEvents")
+        local v78
+        if v77 == nil then
+            v78 = nil
+        else
+            v78 = v77:FindFirstChild(v_u_7.REMOTE_NAME)
+        end
+        if v78 ~= nil and v78:IsA("RemoteFunction") then
+            v_u_32 = v78
+        end
+        v_u_76 = v_u_32
+    else
+        v_u_76 = v_u_32
+    end
+    if v_u_76 == nil or v_u_29 then
+        return nil
+    else
+        v_u_29 = true
+        local v79, v80 = pcall(function()
+            -- upvalues: (copy) v_u_76, (copy) p_u_74, (copy) p_u_75
+            return v_u_76:InvokeServer(p_u_74, p_u_75 or {})
+        end)
+        v_u_29 = false
+        if v79 and type(v80) == "table" then
+            return v80
+        else
+            return nil
+        end
+    end
+end
+local function v_u_91(p82, p83) -- name: perform
+    -- upvalues: (ref) v_u_29, (ref) v_u_32, (copy) v_u_3, (copy) v_u_7, (copy) v_u_27, (copy) v_u_13, (copy) v_u_26, (copy) v_u_81, (copy) v_u_22
+    if not v_u_29 then
+        local v84
+        if v_u_32 == nil then
+            local v85 = v_u_3:FindFirstChild("rEvents")
+            local v86
+            if v85 == nil then
+                v86 = nil
+            else
+                v86 = v85:FindFirstChild(v_u_7.REMOTE_NAME)
+            end
+            if v86 ~= nil and v86:IsA("RemoteFunction") then
+                v_u_32 = v86
+            end
+            v84 = v_u_32
+        else
+            v84 = v_u_32
+        end
+        if v84 ~= nil then
+            v_u_26:Play()
+            local v87 = v_u_81(p82, p83)
+            if v87 == nil or v87.Ok ~= true then
+                local v88
+                if v87 == nil then
+                    v88 = nil
+                else
+                    v88 = v87.Reason
+                end
+                local v89 = (v88 == nil or v_u_22[v88] == nil) and "Something went wrong. Try again." or v_u_22[v88]
+                v_u_27:Play()
+                v_u_13.play(v89)
+            end
+            return
+        end
+    end
+    local v90 = v_u_29 and "Slow down a moment." or "Something went wrong. Try again."
+    v_u_27:Play()
+    v_u_13.play(v90)
+end
+local function v_u_95(p92, p93) -- name: setFill
+    local v94 = math.clamp(p93, 0, 1)
+    p92.AnchorPoint = Vector2.new(0, p92.AnchorPoint.Y)
+    p92.Position = UDim2.new(0, 0, p92.Position.Y.Scale, p92.Position.Y.Offset)
+    p92.Size = UDim2.new(v94, 0, p92.Size.Y.Scale, p92.Size.Y.Offset)
+end
+local function v_u_100(p96) -- name: cardButton
+    local v97 = p96:FindFirstChild("BG")
+    if v97 == nil then
+        return nil
+    end
+    for _, v98 in {
+        "ClaimBtn",
+        "ClaimedBtn",
+        "LockedBtn",
+        "ActionBtn"
+    } do
+        local v99 = v97:FindFirstChild(v98)
+        if v99 == nil or not v99:IsA("GuiButton") then
+            v99 = nil
+        end
+        if v99 == nil then
+            continue
+        end
+        return v99
+    end
+    return nil
+end
+local function v_u_106(p101) -- name: hasClaimable
+    -- upvalues: (copy) v_u_6
+    if p101.FinalUnlocked and not p101.FinalClaimed then
+        return true
+    end
+    for v102 = 1, p101.MaxTier do
+        if not v_u_6.TierUnlocked(p101.Exp, v102) or v_u_6.IsTierClaimed(p101.Claimed, v102) then
+            continue
+        end
+        return true
+    end
+    for _, v103 in p101.Daily do
+        if v103.Claimed or v103.Progress < v103.Count then
+            continue
+        end
+        v104 = true
+    end
+    local v104 = false
+    if not v104 then
+        for _, v105 in p101.Season do
+            if v105.Claimed or v105.Progress < v105.Count then
+                continue
+            end
+            return true
+        end
+        v104 = false
+    end
+    return v104
+end
+local function v_u_119(p107) -- name: setHudMotion
+    -- upvalues: (ref) v_u_60, (copy) v_u_4, (ref) v_u_61, (ref) v_u_33, (copy) v_u_106, (ref) v_u_56, (ref) v_u_57, (ref) v_u_58, (ref) v_u_59
+    if p107 then
+        if v_u_60 == nil then
+            v_u_60 = v_u_4.Heartbeat:Connect(function(p108)
+                -- upvalues: (ref) v_u_61, (ref) v_u_33, (ref) v_u_106, (ref) v_u_56, (ref) v_u_57, (ref) v_u_58, (ref) v_u_59
+                v_u_61 = v_u_61 + p108
+                local v109
+                if v_u_33 == nil then
+                    v109 = false
+                else
+                    v109 = v_u_106(v_u_33)
+                end
+                local v110 = v109 and 5.5 or 2.2
+                local v111 = v109 and 0.18 or 0.1
+                local v112 = v109 and 0.12 or 0.35
+                if v_u_56 ~= nil then
+                    local v113 = v_u_56
+                    local v114 = v_u_61 * v110
+                    v113.ImageTransparency = v112 + v111 * math.sin(v114)
+                end
+                if v_u_57 ~= nil then
+                    v_u_57.Rotation = v_u_61 * 40 % 360
+                end
+                if v_u_58 ~= nil then
+                    local v115 = v_u_61 * 2.4
+                    local v116 = math.sin(v115) * 0.02
+                    v_u_58.Position = UDim2.new(v_u_59.X.Scale, v_u_59.X.Offset, v_u_59.Y.Scale + v116, v_u_59.Y.Offset)
+                    local v117 = v_u_58
+                    local v118 = v_u_61 * 1.7
+                    v117.Rotation = math.sin(v118) * 3
+                end
+            end)
+        end
+    else
+        if v_u_60 ~= nil then
+            v_u_60:Disconnect()
+            v_u_60 = nil
+        end
+        if v_u_58 ~= nil then
+            v_u_58.Position = v_u_59
+            v_u_58.Rotation = 0
+        end
+        return
+    end
+end
+local function v_u_123() -- name: refreshHud
+    -- upvalues: (ref) v_u_54, (ref) v_u_33, (copy) v_u_17, (copy) v_u_23, (copy) v_u_119, (ref) v_u_55, (copy) v_u_106
+    if v_u_54 ~= nil then
+        local v120 = v_u_33
+        local v121 = v120 == nil or v120.Active
+        if v121 then
+            v121 = not v_u_17.IsInGym(v_u_23)
+        end
+        v_u_54.Visible = v121
+        v_u_119(v121)
+        if v_u_55 ~= nil then
+            local v122 = v_u_55
+            if v121 then
+                if v120 == nil then
+                    v121 = false
+                else
+                    v121 = v_u_106(v120)
+                end
+            end
+            v122.Visible = v121
+        end
+    end
+end
+local function v_u_126(p124) -- name: focusTier
+    -- upvalues: (copy) v_u_6
+    for v125 = 1, p124.MaxTier do
+        if not v_u_6.TierUnlocked(p124.Exp, v125) or v_u_6.IsTierClaimed(p124.Claimed, v125) then
+            continue
+        end
+        return v125
+    end
+    return p124.Tier
+end
+local function v_u_134() -- name: tryScroll
+    -- upvalues: (ref) v_u_33, (ref) v_u_31, (ref) v_u_37, (copy) v_u_126, (ref) v_u_39, (copy) v_u_62
+    local v127 = v_u_33
+    if v_u_31 and (v127 ~= nil and (v_u_37 ~= nil and v_u_37.Visible)) then
+        v_u_31 = false
+        local v_u_128 = v_u_126(v127)
+        task.defer(function()
+            -- upvalues: (copy) v_u_128, (ref) v_u_39, (ref) v_u_62
+            local v129 = v_u_39
+            local v130 = v_u_62[v_u_128]
+            if v129 ~= nil then
+                if v130 == nil then
+                    return
+                end
+                local v131 = v130.AbsolutePosition.X - v129.AbsolutePosition.X + v129.CanvasPosition.X
+                local v132 = Vector2.new
+                local v133 = v131 - v129.AbsoluteSize.X * 0.02
+                v129.CanvasPosition = v132(math.max(v133, 0), 0)
+            end
+        end)
+    end
+end
+local function v_u_139(p135) -- name: syncPassPets
+    -- upvalues: (copy) v_u_62, (copy) v_u_73, (copy) v_u_16, (ref) v_u_48
+    for _, v136 in v_u_62 do
+        local v137 = v_u_73(v136, "BG/ItemImage")
+        if v137 == nil or not v137:IsA("ImageLabel") then
+            v137 = nil
+        end
+        if v137 == nil then
+            continue
+        end
+        v_u_16.SetShown(v137, p135)
+    end
+    if v_u_48 ~= nil then
+        local v138 = v_u_73(v_u_48, "BG/ItemImage")
+        if v138 == nil or not v138:IsA("ImageLabel") then
+            v138 = nil
+        end
+        if v138 ~= nil then
+            v_u_16.SetShown(v138, p135)
+        end
+    end
+end
+local function v_u_152(p140) -- name: paintXp
+    -- upvalues: (ref) v_u_41, (ref) v_u_42, (ref) v_u_43, (copy) v_u_95, (copy) v_u_6
+    if p140.Tier >= p140.MaxTier then
+        local v141 = v_u_41
+        if v141 ~= nil and v141:IsA("TextLabel") then
+            v141.Text = "MAX TIER"
+        end
+        local v142 = v_u_42
+        if v142 ~= nil and v142:IsA("TextLabel") then
+            v142.Text = "MAX TIER"
+        end
+        if v_u_43 ~= nil then
+            v_u_95(v_u_43, 1)
+        end
+    else
+        local v143 = v_u_6.ExpForTier(p140.Tier) or 0
+        local v144 = (v_u_6.ExpForTier(p140.Tier + 1) or p140.MaxExp) - v143
+        local v145 = math.max(v144, 1)
+        local v146 = p140.Exp - v143
+        local v147 = math.clamp(v146, 0, v145)
+        local v148 = v_u_41
+        local v149 = ("%* / %*"):format(v147, v145)
+        if v148 ~= nil and v148:IsA("TextLabel") then
+            v148.Text = v149
+        end
+        local v150 = v_u_42
+        local v151 = ("NEXT TIER %* / %*"):format(v147, v145)
+        if v150 ~= nil and v150:IsA("TextLabel") then
+            v150.Text = v151
+        end
+        if v_u_43 ~= nil then
+            v_u_95(v_u_43, v147 / v145)
+        end
+    end
+end
+local function v_u_163(p153, p154, p155, p156, p157) -- name: paintCardText
+    -- upvalues: (copy) v_u_73, (copy) v_u_9, (copy) v_u_16
+    local v158 = v_u_73(p153, "BG/Tier")
+    if v158 ~= nil and v158:IsA("TextLabel") then
+        v158.Text = p154
+    end
+    local v159 = v_u_73(p153, "BG/ItemName")
+    local v160 = v_u_9.Describe(p155)
+    local v161
+    if v160 == nil then
+        v161 = p155.Type
+    else
+        v161 = v160.Title
+    end
+    if v159 ~= nil and v159:IsA("TextLabel") then
+        v159.Text = v161
+    end
+    local v162 = v_u_73(p153, "BG/ItemImage")
+    if v162 == nil or not v162:IsA("ImageLabel") then
+        v162 = nil
+    end
+    if v162 ~= nil then
+        v_u_16.Apply(v162, p155, p156, p157)
+        if p155.Type == "CandyCorn" then
+            v162.ImageColor3 = Color3.new(1, 1, 1)
+        end
+    end
+end
+local v_u_164 = nil
+local v_u_165 = {}
+local function v_u_170(p166) -- name: rememberGrandFloater
+    -- upvalues: (copy) v_u_165
+    for _, v167 in v_u_165 do
+        if v167.gui ~= p166 then
+            continue
+        end
+        return
+    end
+    local v168 = v_u_165
+    local v169 = {
+        ["gui"] = p166,
+        ["parent"] = p166.Parent,
+        ["position"] = p166.Position,
+        ["size"] = p166.Size
+    }
+    table.insert(v168, v169)
+end
+local function v_u_172() -- name: restoreGrandFloaters
+    -- upvalues: (copy) v_u_165
+    for _, v171 in v_u_165 do
+        v171.gui.Parent = v171.parent
+        v171.gui.Position = v171.position
+        v171.gui.Size = v171.size
+        v171.gui.Visible = true
+    end
+end
+local function v_u_183(p173, p174) -- name: placeGrandFloater
+    -- upvalues: (ref) v_u_37
+    local v175 = p173.parent
+    if v175:IsA("GuiObject") and v_u_37 ~= nil then
+        local v176 = v175.AbsolutePosition
+        local v177 = v175.AbsoluteSize
+        local v178 = p173.position
+        local v179 = p173.size
+        local v180 = Vector2.new(v179.X.Scale * v177.X + v179.X.Offset, v179.Y.Scale * v177.Y + v179.Y.Offset)
+        local v181 = v176 + Vector2.new(v178.X.Scale * v177.X + v178.X.Offset, v178.Y.Scale * v177.Y + v178.Y.Offset)
+        local v182 = p173.gui
+        v182.Parent = v_u_37
+        v182.ZIndex = 5
+        v182.Size = UDim2.fromOffset(v180.X, v180.Y)
+        v182.Position = UDim2.fromOffset(v181.X - p174.X, v181.Y - p174.Y)
+        v182.Visible = true
+    end
+end
+local function v_u_204(p_u_184) -- name: oversizeGrandViewport
+    -- upvalues: (ref) v_u_37, (copy) v_u_73, (ref) v_u_164, (copy) v_u_170, (copy) v_u_172, (copy) v_u_165, (copy) v_u_183, (copy) v_u_204
+    if v_u_37 == nil then
+        return
+    else
+        local v185 = v_u_73(p_u_184, "BG/ItemImage")
+        if v185 == nil or not v185:IsA("ImageLabel") then
+            v185 = nil
+        end
+        if v185 == nil then
+            return
+        else
+            local v186 = v185:FindFirstChild("PetViewport")
+            if v186 ~= nil and v186:IsA("ViewportFrame") then
+                v_u_164 = v186
+            end
+            local v187 = p_u_184:FindFirstChild("BG")
+            if v187 ~= nil then
+                for _, v188 in { "Tier", "ItemName" } do
+                    local v189 = v187:FindFirstChild(v188)
+                    if v189 == nil or not v189:IsA("GuiObject") then
+                        continue
+                    end
+                    v_u_170(v189)
+                end
+            end
+            local v190 = v_u_164
+            if v190 == nil then
+                return
+            else
+                v190.Parent = v_u_37
+                v190.AnchorPoint = Vector2.new(0.5, 0.5)
+                v190.Active = false
+                v190.ZIndex = 3
+                local v191 = p_u_184:FindFirstAncestorWhichIsA("ScrollingFrame")
+                local v192 = v_u_37.Visible
+                if v191 ~= nil then
+                    local v193 = p_u_184.AbsolutePosition.X
+                    local v194 = v193 + p_u_184.AbsoluteSize.X
+                    local v195 = v191.AbsolutePosition.X
+                    local v196 = v195 + v191.AbsoluteSize.X
+                    if v192 then
+                        if v195 + 12 < v194 then
+                            v192 = v193 < v196 - 12
+                        else
+                            v192 = false
+                        end
+                    end
+                end
+                v190.Visible = v192
+                if v192 then
+                    local v197 = v185.AbsoluteSize
+                    local v198 = v185.AbsolutePosition + v197 / 2
+                    local v199 = v197.X * 1.25
+                    local v200 = v197.Y * 1.7
+                    local v201 = v198 + Vector2.new(0, -v197.Y * 0.14)
+                    local v202 = v_u_37.AbsolutePosition
+                    v190.Size = UDim2.fromOffset(v199, v200)
+                    v190.Position = UDim2.fromOffset(v201.X - v202.X, v201.Y - v202.Y)
+                    for _, v203 in v_u_165 do
+                        v_u_183(v203, v202)
+                    end
+                    if v191 ~= nil and v191:GetAttribute("GrandViewportFollow") ~= true then
+                        v191:SetAttribute("GrandViewportFollow", true)
+                        v191:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+                            -- upvalues: (ref) v_u_204, (copy) p_u_184
+                            v_u_204(p_u_184)
+                        end)
+                    end
+                else
+                    v_u_172()
+                end
+            end
+        end
+    end
+end
+local function v_u_217(p205, p206, p207) -- name: paintTierCard
+    -- upvalues: (copy) v_u_9, (copy) v_u_73, (copy) v_u_16
+    local v208 = {}
+    for _, v209 in p207 do
+        local v210 = v_u_9.Describe(v209)
+        local v211
+        if v210 == nil then
+            v211 = v209.Type
+        else
+            v211 = v210.Title
+        end
+        table.insert(v208, v211)
+    end
+    local v212 = v_u_73(p205, "BG/Tier")
+    if v212 ~= nil and v212:IsA("TextLabel") then
+        v212.Text = p206
+    end
+    local v213 = v_u_73(p205, "BG/ItemName")
+    local v214 = table.concat(v208, " + ")
+    if v213 ~= nil and v213:IsA("TextLabel") then
+        v213.Text = v214
+    end
+    local v215 = v_u_73(p205, "BG/ItemImage")
+    if v215 == nil or not v215:IsA("ImageLabel") then
+        v215 = nil
+    end
+    local v216 = p207[1]
+    if v215 ~= nil and v216 ~= nil then
+        v_u_16.Apply(v215, v216, nil, nil)
+        if v216.Type == "CandyCorn" then
+            v215.ImageColor3 = Color3.new(1, 1, 1)
+        end
+    end
+end
+local function v_u_227(p_u_218, p219, p220) -- name: buildTierCard
+    -- upvalues: (ref) v_u_39, (copy) v_u_36, (copy) v_u_217, (copy) v_u_100, (copy) v_u_91, (copy) v_u_12, (copy) v_u_62
+    local v221
+    if v_u_39 == nil then
+        v221 = nil
+    else
+        v221 = v_u_39:FindFirstChild("Templates")
+    end
+    local v222
+    if v221 == nil then
+        v222 = nil
+    else
+        v222 = v221:FindFirstChild(p219)
+    end
+    if v222 == nil or not v222:IsA("GuiObject") then
+        v222 = nil
+    end
+    if v222 == nil or v_u_39 == nil then
+        local v223 = ("[HalloweenPass] missing %*"):format(p219)
+        if not v_u_36.tierTemplate then
+            v_u_36.tierTemplate = true
+            warn(v223)
+        end
+    else
+        local v224 = v222:Clone()
+        v224.Name = "TierCard"
+        v224.Visible = true
+        v224.LayoutOrder = p_u_218
+        v224:SetAttribute("CardState", p219)
+        v_u_217(v224, ("TIER %*"):format(p_u_218), p220)
+        local v225 = v_u_100(v224)
+        if v225 ~= nil then
+            if p219 == "ClaimTemplate" then
+                local function v226()
+                    -- upvalues: (ref) v_u_91, (copy) p_u_218
+                    v_u_91("ClaimTier", {
+                        ["Tier"] = p_u_218
+                    })
+                end
+                v_u_12.apply(v225)
+                v225.Activated:Connect(v226)
+            else
+                v225.Active = false
+                v_u_12.apply(v225)
+            end
+        end
+        v224.Parent = v_u_39
+        v_u_62[p_u_218] = v224
+        return
+    end
+end
+local v_u_235 = (function() -- name: exclusiveFinalNameStyle
+    -- upvalues: (copy) v_u_8
+    for _, v228 in {
+        "Toxic",
+        "Solar",
+        "Alien",
+        "Toy",
+        "Halloween"
+    } do
+        local v229 = v_u_8.GetEgg(v228)
+        if v229 == nil then
+            continue
+        end
+        local v230 = v229.EggName == "Exclusive Egg"
+        if v229.LegacyNames ~= nil then
+            for _, v231 in v229.LegacyNames do
+                if v231 ~= "Exclusive Egg" then
+                    continue
+                end
+                v230 = true
+            end
+        end
+        if not v230 then
+            continue
+        end
+        local v232 = (1 / 0)
+        local v233 = nil
+        for _, v234 in v229.Pool do
+            if v234.Style == nil or (v234.Style.NameAnimated ~= true or v234.Weight >= v232) then
+                continue
+            end
+            v232 = v234.Weight
+            v233 = v234.Style
+        end
+        return v233 ~= nil and v233.NameColors ~= nil and {
+            ["NameColors"] = nil,
+            ["NameAnimated"] = true,
+            ["NameCycleSeconds"] = nil,
+            ["NameRotation"] = nil,
+            ["NameColors"] = v233.NameColors,
+            ["NameCycleSeconds"] = v233.NameCycleSeconds,
+            ["NameRotation"] = v233.NameRotation
+        } or nil
+    end
+    return nil
+end)()
+local function v_u_243() -- name: syncPrestigeRainbow
+    -- upvalues: (copy) v_u_66
+    for _, v236 in v_u_66 do
+        local v237 = v236:FindFirstChild("RainbowDriver")
+        local v238
+        if v237 == nil then
+            v238 = nil
+        else
+            v238 = v237:FindFirstChild("PetNameGradient")
+        end
+        if v238 == nil or not v238:IsA("UIGradient") then
+            continue
+        end
+        local v239 = { v236:FindFirstChild("RainbowGradient") }
+        local v240
+        if v236 == nil then
+            v240 = nil
+        else
+            v240 = v236:FindFirstChild("ButtonLabel")
+        end
+        if v240 == nil or not v240:IsA("TextLabel") then
+            v240 = nil
+        end
+        local v241
+        if v240 == nil then
+            v241 = nil
+        else
+            v241 = v240:FindFirstChildOfClass("UIStroke")
+        end
+        if v241 ~= nil then
+            table.insert(v239, v241:FindFirstChild("RainbowGradient"))
+        end
+        for _, v242 in v239 do
+            if v242 == nil or not v242:IsA("UIGradient") then
+                continue
+            end
+            v242.Color = v238.Color
+            v242.Offset = Vector2.zero
+            v242.Rotation = v238.Rotation
+        end
+    end
+end
+local function v_u_249(p244) -- name: mountPrestigeRainbow
+    -- upvalues: (copy) v_u_235, (copy) v_u_36, (copy) v_u_15, (copy) v_u_68, (copy) v_u_243
+    if v_u_235 == nil then
+        if not v_u_36.prestigeRainbow then
+            v_u_36.prestigeRainbow = true
+            warn("[HalloweenPass] exclusive egg rainbow style is missing")
+        end
+    else
+        local v245 = p244:FindFirstChild("RainbowDriver")
+        if v245 == nil or not v245:IsA("TextLabel") then
+            v245 = Instance.new("TextLabel")
+            v245.Name = "RainbowDriver"
+            v245.Visible = false
+            v245.BackgroundTransparency = 1
+            v245.Size = UDim2.fromScale(0, 0)
+            v245.Text = ""
+            v245.Parent = p244
+        end
+        local v246 = {
+            ["Container"] = p244,
+            ["NameLabel"] = v245,
+            ["Style"] = v_u_235
+        }
+        local v247 = v_u_15.apply(v246)
+        if v247 ~= nil then
+            local v248 = v_u_68
+            table.insert(v248, v247)
+        end
+        v_u_243()
+        return
+    end
+end
+local function v_u_256(p250) -- name: paintPrestige
+    -- upvalues: (copy) v_u_66, (copy) v_u_67, (copy) v_u_18
+    local v251 = p250.Tier >= p250.MaxTier
+    for _, v252 in v_u_66 do
+        local v253 = v_u_67[v252]
+        v252.ImageColor3 = v_u_18
+        v252.AutoButtonColor = false
+        local v254
+        if v252 == nil then
+            v254 = nil
+        else
+            v254 = v252:FindFirstChild("ButtonLabel")
+        end
+        if v254 == nil or not v254:IsA("TextLabel") then
+            v254 = nil
+        end
+        if v254 ~= nil then
+            v254.TextColor3 = v_u_18
+        end
+        if v251 and v253 ~= nil then
+            local v255 = ("PRESTIGE %*/%*"):format(p250.Prestige, p250.PrestigesForFinal)
+            if v254 ~= nil and v254:IsA("TextLabel") then
+                v254.Text = v255
+            end
+            v252.Visible = true
+            if v252.Parent == v253 then
+                continue
+            end
+            v252.Parent = v253
+        else
+            v252.Visible = false
+            v252.Parent = nil
+        end
+    end
+end
+local function v_u_261() -- name: mountGrandStyle
+    -- upvalues: (ref) v_u_49, (ref) v_u_48, (copy) v_u_73, (copy) v_u_36, (copy) v_u_15, (copy) v_u_21
+    if v_u_49 == nil and v_u_48 ~= nil then
+        local v257 = v_u_73(v_u_48, "BG/SunrayClip")
+        if v257 == nil or not v257:IsA("GuiObject") then
+            if not v_u_36.sunray then
+                v_u_36.sunray = true
+                warn("[HalloweenPass] missing SunrayClip")
+            end
+        else
+            local v258 = v_u_15.apply
+            local v259 = {
+                ["Container"] = v257
+            }
+            local v260 = v_u_73(v_u_48, "BG/ItemImage")
+            if v260 == nil or not v260:IsA("ImageLabel") then
+                v260 = nil
+            end
+            v259.Image = v260
+            v259.Style = {
+                ["Sunray"] = {
+                    ["Image"] = "rbxassetid://74793289002472",
+                    ["Color"] = nil,
+                    ["Transparency"] = 0.35,
+                    ["Speed"] = 30,
+                    ["Color"] = v_u_21
+                }
+            }
+            v_u_49 = v258(v259)
+            return
+        end
+    else
+        return
+    end
+end
+local function v_u_266(p262) -- name: setPassMotion
+    -- upvalues: (copy) v_u_261, (ref) v_u_50, (copy) v_u_4, (ref) v_u_49, (copy) v_u_68, (copy) v_u_243
+    if p262 then
+        v_u_261()
+        if v_u_50 == nil then
+            v_u_50 = v_u_4.RenderStepped:Connect(function(p263)
+                -- upvalues: (ref) v_u_49, (ref) v_u_68, (ref) v_u_243
+                if v_u_49 ~= nil then
+                    v_u_49.Update(p263)
+                end
+                for _, v264 in v_u_68 do
+                    v264.Update(p263)
+                end
+                v_u_243()
+            end)
+        end
+    else
+        if v_u_50 ~= nil then
+            v_u_50:Disconnect()
+            v_u_50 = nil
+        end
+        if v_u_49 ~= nil then
+            v_u_49.Reset()
+        end
+        for _, v265 in v_u_68 do
+            v265.Reset()
+        end
+        return
+    end
+end
+local function v_u_277(p267) -- name: renderPass
+    -- upvalues: (copy) v_u_152, (ref) v_u_44, (ref) v_u_51, (copy) v_u_256, (copy) v_u_7, (copy) v_u_6, (copy) v_u_62, (copy) v_u_227, (ref) v_u_48, (copy) v_u_163, (copy) v_u_204, (copy) v_u_100, (copy) v_u_20, (copy) v_u_18, (copy) v_u_139, (ref) v_u_37
+    v_u_152(p267)
+    local v268 = v_u_44
+    if v268 ~= nil and v268:IsA("TextLabel") then
+        v268.Text = "SKIP TIER"
+    end
+    if v_u_51 ~= nil then
+        v_u_51.Visible = p267.Tier < p267.MaxTier
+    end
+    v_u_256(p267)
+    for _, v269 in v_u_7.TIERS do
+        local v270 = v269.Tier
+        local v271 = v_u_6.IsTierClaimed(p267.Claimed, v270) and "ClaimedTemplate" or (v_u_6.TierUnlocked(p267.Exp, v270) and "ClaimTemplate" or "LockedTemplate")
+        local v272 = v_u_62[v269.Tier]
+        if v272 ~= nil and v272:GetAttribute("CardState") ~= v271 then
+            v272:Destroy()
+            v_u_62[v269.Tier] = nil
+            v272 = nil
+        end
+        if v272 ~= nil then
+            continue
+        end
+        v_u_227(v269.Tier, v271, v269.Rewards)
+    end
+    if v_u_48 ~= nil then
+        v_u_48.LayoutOrder = p267.MaxTier + 1
+        v_u_163(v_u_48, "GRAND PRIZE", v_u_7.FINAL_REWARD, 10, 1.36)
+        v_u_204(v_u_48)
+        local v273 = v_u_100(v_u_48)
+        local v274
+        if v273 == nil then
+            v274 = nil
+        else
+            v274 = v273:FindFirstChild("ButtonLabel")
+        end
+        if v274 == nil or not v274:IsA("TextLabel") then
+            v274 = nil
+        end
+        if p267.FinalClaimed then
+            if v274 ~= nil and v274:IsA("TextLabel") then
+                v274.Text = "CLAIMED"
+            end
+            if v273 ~= nil then
+                v273.Active = false
+                v273.ImageColor3 = v_u_20
+            end
+        elseif p267.FinalUnlocked then
+            if v274 ~= nil and v274:IsA("TextLabel") then
+                v274.Text = "CLAIM"
+            end
+            if v273 ~= nil then
+                v273.Active = true
+                v273.ImageColor3 = v_u_18
+            end
+        else
+            if v274 ~= nil and v274:IsA("TextLabel") then
+                v274.Text = "LOCKED"
+            end
+            if v273 ~= nil then
+                v273.Active = false
+                v273.ImageColor3 = v_u_20
+            end
+        end
+    end
+    local v275 = v_u_139
+    local v276
+    if v_u_37 == nil then
+        v276 = false
+    else
+        v276 = v_u_37.Visible
+    end
+    v275(v276)
+end
+local function v_u_282(p278, p279) -- name: setDimmed
+    local v280 = p279 and 0.45 or 0
+    for _, v281 in p278:GetDescendants() do
+        if v281:IsA("TextLabel") or v281:IsA("TextButton") then
+            v281.TextTransparency = v280
+        elseif v281:IsA("ImageLabel") or v281:IsA("ImageButton") then
+            v281.ImageTransparency = v280
+        else
+            if not v281:IsA("UIStroke") then
+                continue
+            end
+            v281.Transparency = v280
+        end
+    end
+end
+local function v_u_299(p283, p284) -- name: paintQuest
+    -- upvalues: (copy) v_u_10, (copy) v_u_73, (copy) v_u_95, (copy) v_u_282
+    local v285 = p283:FindFirstChild("QuestName")
+    local v286 = p284.DisplayName
+    if v285 ~= nil and v285:IsA("TextLabel") then
+        v285.Text = v286
+    end
+    local v287 = p283:FindFirstChild("QuestDetails")
+    local v288 = p284.Description
+    if v287 ~= nil and v287:IsA("TextLabel") then
+        v287.Text = v288
+    end
+    local v289 = p283:FindFirstChild("QuestProgress")
+    local v290 = ("%* / %*"):format(v_u_10.shortenNumber(p284.Progress), (v_u_10.shortenNumber(p284.Count)))
+    if v289 ~= nil and v289:IsA("TextLabel") then
+        v289.Text = v290
+    end
+    local v291 = v_u_73(p283, "RewardList/ItemName")
+    local v292 = ("+%* XP"):format(p284.ExpReward)
+    if v291 ~= nil and v291:IsA("TextLabel") then
+        v291.Text = v292
+    end
+    local v293 = v_u_73(p283, "XpBar/Bar/Fill")
+    if v293 == nil or not v293:IsA("GuiObject") then
+        v293 = nil
+    end
+    if v293 ~= nil then
+        v_u_95(v293, p284.Count <= 0 and 0 or p284.Progress / p284.Count)
+    end
+    local v294 = p283:FindFirstChild("ClaimBtn")
+    if v294 == nil or not v294:IsA("GuiButton") then
+        v294 = nil
+    end
+    local v295 = not p284.Claimed
+    if v295 then
+        v295 = p284.Progress >= p284.Count
+    end
+    p283:SetAttribute("CanClaim", v295)
+    if p284.Claimed then
+        local v296
+        if v294 == nil then
+            v296 = nil
+        else
+            v296 = v294:FindFirstChild("ButtonLabel")
+        end
+        if v296 == nil or not v296:IsA("TextLabel") then
+            v296 = nil
+        end
+        if v296 ~= nil and v296:IsA("TextLabel") then
+            v296.Text = "CLAIMED"
+        end
+        v_u_282(p283, true)
+        if v294 ~= nil then
+            v294.Active = false
+            return
+        end
+    elseif v295 then
+        local v297
+        if v294 == nil then
+            v297 = nil
+        else
+            v297 = v294:FindFirstChild("ButtonLabel")
+        end
+        if v297 == nil or not v297:IsA("TextLabel") then
+            v297 = nil
+        end
+        if v297 ~= nil and v297:IsA("TextLabel") then
+            v297.Text = "CLAIM"
+        end
+        v_u_282(p283, false)
+        if v294 ~= nil then
+            v294.Active = true
+            return
+        end
+    else
+        local v298
+        if v294 == nil then
+            v298 = nil
+        else
+            v298 = v294:FindFirstChild("ButtonLabel")
+        end
+        if v298 == nil or not v298:IsA("TextLabel") then
+            v298 = nil
+        end
+        if v298 ~= nil and v298:IsA("TextLabel") then
+            v298.Text = "IN PROGRESS"
+        end
+        v_u_282(p283, false)
+        if v294 ~= nil then
+            v294.Active = false
+        end
+    end
+end
+local function v_u_313(p300, p301) -- name: placeQuest
+    -- upvalues: (ref) v_u_40, (copy) v_u_63, (copy) v_u_36, (copy) v_u_91, (copy) v_u_12, (copy) v_u_299
+    if v_u_40 ~= nil then
+        local v302 = (p300.Claimed or p300.Progress < p300.Count) and "InProgress" or "Claim"
+        local v303 = ("%*:%*"):format(p300.Category, p300.Key)
+        local v304 = v_u_63[v303]
+        if v304 ~= nil and v304.templateName ~= v302 then
+            v304.root:Destroy()
+            v_u_63[v303] = nil
+            v304 = nil
+        end
+        if v304 == nil then
+            local v305 = v_u_40:FindFirstChild("Templates")
+            local v306
+            if v305 == nil then
+                v306 = nil
+            else
+                v306 = v305:FindFirstChild(v302)
+            end
+            if v306 == nil or not v306:IsA("GuiObject") then
+                v306 = nil
+            end
+            if v306 == nil then
+                local v307 = ("[HalloweenPass] missing %* quest template"):format(v302)
+                if not v_u_36.questTemplate then
+                    v_u_36.questTemplate = true
+                    warn(v307)
+                end
+            end
+            local v_u_308 = v306:Clone()
+            v_u_308.Name = "QuestRow"
+            v_u_308.Visible = true
+            local v_u_309 = p300.Key
+            local v_u_310 = p300.Category
+            local v311 = v_u_308:FindFirstChild("ClaimBtn")
+            if v311 == nil or not v311:IsA("GuiButton") then
+                v311 = nil
+            end
+            if v311 ~= nil then
+                local function v312()
+                    -- upvalues: (copy) v_u_308, (ref) v_u_91, (copy) v_u_310, (copy) v_u_309
+                    if v_u_308:GetAttribute("CanClaim") == true then
+                        v_u_91("ClaimQuest", {
+                            ["Category"] = v_u_310,
+                            ["Key"] = v_u_309
+                        })
+                    end
+                end
+                v_u_12.apply(v311)
+                v311.Activated:Connect(v312)
+            end
+            v_u_308.Parent = v_u_40
+            v304 = {
+                ["root"] = v_u_308,
+                ["templateName"] = v302,
+                ["generation"] = p301
+            }
+            v_u_63[v303] = v304
+        end
+        v304.generation = p301
+        v304.root.LayoutOrder = p301
+        v_u_299(v304.root, p300)
+    end
+end
+local function v_u_329() -- name: fitQuestCanvas
+    -- upvalues: (ref) v_u_40, (copy) v_u_63, (ref) v_u_53
+    local v314 = v_u_40
+    if v314 == nil then
+        return
+    else
+        local v315 = v314.AbsoluteWindowSize.Y
+        if v315 <= 0 then
+            v315 = v314.AbsoluteSize.Y
+        end
+        if v315 > 0 then
+            local v316 = v314:FindFirstChildOfClass("UIListLayout")
+            if v316 ~= nil then
+                local v317 = UDim.new
+                local v318 = v315 * 0.017
+                v316.Padding = v317(0, (math.floor(v318)))
+            end
+            local v319 = v315 * 0.236804
+            local v320 = math.floor(v319)
+            for _, v321 in v_u_63 do
+                local v322 = v321.root.Size
+                v321.root.Size = UDim2.new(v322.X.Scale, v322.X.Offset, 0, v320)
+            end
+            if v_u_53 ~= nil then
+                local v323 = v_u_53.Size
+                local v324 = v_u_53
+                local v325 = UDim2.new
+                local v326 = v323.X.Scale
+                local v327 = v323.X.Offset
+                local v328 = v315 * 0.1
+                v324.Size = v325(v326, v327, 0, (math.floor(v328)))
+            end
+            v314.AutomaticCanvasSize = Enum.AutomaticSize.Y
+            if v316 ~= nil then
+                v314.CanvasSize = UDim2.fromOffset(0, v316.AbsoluteContentSize.Y)
+            end
+        end
+    end
+end
+local function v_u_351(p330) -- name: renderQuests
+    -- upvalues: (ref) v_u_46, (ref) v_u_47, (ref) v_u_34, (ref) v_u_45, (ref) v_u_40, (ref) v_u_35, (copy) v_u_313, (ref) v_u_53, (ref) v_u_52, (copy) v_u_329, (copy) v_u_63
+    if v_u_46 ~= nil then
+        v_u_46.Text = p330.QuestsDisabled and "Quests unavailable" or v_u_47
+    end
+    local v331 = os.clock()
+    local v332 = p330.SecondsUntilDailyReset
+    v_u_34 = v331 + math.max(v332, 0)
+    local v333 = v_u_45
+    local v334 = v_u_34 - os.clock()
+    local v335 = math.floor(v334)
+    local v336 = math.max(0, v335)
+    local v337 = v336 // 3600
+    local v338 = v336 % 3600 // 60
+    local v339
+    if v337 > 0 then
+        v339 = ("Resets In: %*h %*m"):format(v337, v338)
+    else
+        v339 = ("Resets In: %*m %*s"):format(v338, v336 % 60)
+    end
+    if v333 ~= nil and v333:IsA("TextLabel") then
+        v333.Text = v339
+    end
+    if v_u_40 ~= nil then
+        v_u_35 = v_u_35 + 1
+        local v340 = v_u_35 * 1000
+        local v341 = v340
+        for _, v342 in p330.Daily do
+            v340 = v341 + 1
+            v_u_313(v342, v340)
+            v341 = v340
+        end
+        if v_u_53 == nil and v_u_52 ~= nil then
+            local v343 = v_u_52:Clone()
+            v343.Name = "SeasonHeader"
+            v343.Visible = true
+            v343.Parent = v_u_40
+            v_u_53 = v343
+        end
+        if v_u_53 ~= nil then
+            local v344 = #p330.Season > 0
+            v_u_53.Visible = v344
+            if v344 then
+                v340 = v341 + 1
+                v_u_53.LayoutOrder = v340
+                v341 = v340
+            end
+        end
+        for _, v345 in p330.Season do
+            v340 = v341 + 1
+            v_u_313(v345, v340)
+            v341 = v340
+        end
+        v_u_329()
+        task.defer(v_u_329)
+        local v346 = {}
+        for v347, v348 in v_u_63 do
+            if v348.generation >= v_u_35 * 1000 then
+                continue
+            end
+            table.insert(v346, v347)
+        end
+        for _, v349 in v346 do
+            local v350 = v_u_63[v349]
+            if v350 == nil then
+                continue
+            end
+            v350.root:Destroy()
+            v_u_63[v349] = nil
+        end
+    end
+end
+local function v_u_352() -- name: showPass
+    -- upvalues: (copy) v_u_26, (ref) v_u_37, (copy) v_u_11
+    v_u_26:Play()
+    if v_u_37 ~= nil and not v_u_37.Visible then
+        v_u_11:ShowMenu(v_u_37)
+    end
+end
+local function v_u_353() -- name: showQuests
+    -- upvalues: (copy) v_u_26, (ref) v_u_38, (copy) v_u_11
+    v_u_26:Play()
+    if v_u_38 ~= nil and not v_u_38.Visible then
+        v_u_11:ShowMenu(v_u_38)
+    end
+end
+local function v_u_354() -- name: closeMenu
+    -- upvalues: (copy) v_u_26, (copy) v_u_11
+    v_u_26:Play()
+    v_u_11:ResetMenus(nil)
+end
+local function v_u_370(p355) -- name: bindTabs
+    -- upvalues: (copy) v_u_64, (copy) v_u_352, (copy) v_u_12, (copy) v_u_36, (copy) v_u_65, (copy) v_u_353, (copy) v_u_67, (copy) v_u_18, (copy) v_u_66, (copy) v_u_249, (ref) v_u_33, (copy) v_u_91, (copy) v_u_22, (copy) v_u_27, (copy) v_u_13
+    local v356 = p355:FindFirstChild("Elements")
+    local v357
+    if v356 == nil then
+        v357 = p355:FindFirstChild("Tabs")
+    else
+        v357 = v356:FindFirstChild("Tabs")
+    end
+    local v358
+    if v357 == nil then
+        v358 = nil
+    else
+        v358 = v357:FindFirstChild("PassTab")
+    end
+    if v358 == nil or not v358:IsA("GuiButton") then
+        v358 = nil
+    end
+    local v359
+    if v357 == nil then
+        v359 = nil
+    else
+        v359 = v357:FindFirstChild("QuestsTab")
+    end
+    if v359 == nil or not v359:IsA("GuiButton") then
+        v359 = nil
+    end
+    if v358 == nil then
+        if not v_u_36.passTab then
+            v_u_36.passTab = true
+            warn("[HalloweenPass] missing PassTab")
+        end
+    else
+        local v360 = v_u_64
+        table.insert(v360, v358)
+        local v361 = v_u_352
+        v_u_12.apply(v358)
+        v358.Activated:Connect(v361)
+    end
+    if v359 == nil then
+        if not v_u_36.questsTab then
+            v_u_36.questsTab = true
+            warn("[HalloweenPass] missing QuestsTab")
+        end
+    else
+        local v362 = v_u_65
+        table.insert(v362, v359)
+        local v363 = v_u_353
+        v_u_12.apply(v359)
+        v359.Activated:Connect(v363)
+    end
+    local v364
+    if v357 == nil then
+        v364 = nil
+    else
+        v364 = v357:FindFirstChild("PrestigeTab")
+    end
+    if v364 == nil or not v364:IsA("GuiButton") then
+        v364 = nil
+    end
+    if v364 == nil then
+        if not v_u_36.prestigeTab then
+            v_u_36.prestigeTab = true
+            warn("[HalloweenPass] missing PrestigeTab")
+        end
+    else
+        local v365 = v364.Parent
+        if v365 ~= nil then
+            v_u_67[v364] = v365
+        end
+        v364.AutoButtonColor = false
+        v364.ImageColor3 = v_u_18
+        v364.Visible = false
+        v364.Parent = nil
+        local v366 = v_u_66
+        table.insert(v366, v364)
+        v_u_249(v364)
+        local function v369()
+            -- upvalues: (ref) v_u_33, (ref) v_u_91, (ref) v_u_22, (ref) v_u_27, (ref) v_u_13
+            local v367 = v_u_33
+            if v367 == nil then
+                return
+            elseif v367.Tier >= v367.MaxTier then
+                v_u_91("Prestige")
+            else
+                local v368 = v_u_22.notMaxTier
+                v_u_27:Play()
+                v_u_13.play(v368)
+            end
+        end
+        v_u_12.apply(v364)
+        v364.Activated:Connect(v369)
+        return
+    end
+end
+local function v_u_379() -- name: mountHudButton
+    -- upvalues: (copy) v_u_14, (copy) v_u_36, (ref) v_u_56, (ref) v_u_57, (ref) v_u_58, (ref) v_u_59, (ref) v_u_55, (ref) v_u_37, (copy) v_u_26, (copy) v_u_11, (copy) v_u_12, (ref) v_u_54
+    local v371 = v_u_14.Resolve().QuestsButton.Parent
+    if v371 == nil then
+        if not v_u_36.hud then
+            v_u_36.hud = true
+            warn("[HalloweenPass] quests button has no parent")
+        end
+    else
+        local v372 = v371:FindFirstChild("HalloweenButton")
+        if v372 == nil or not v372:IsA("GuiObject") then
+            if not v_u_36.hud then
+                v_u_36.hud = true
+                warn("[HalloweenPass] missing HalloweenButton")
+            end
+        else
+            local v373 = v372:FindFirstChild("Container")
+            if v373 == nil or not v373:IsA("GuiButton") then
+                v373 = nil
+            end
+            if v373 == nil then
+                if not v_u_36.hud then
+                    v_u_36.hud = true
+                    warn("[HalloweenPass] missing HalloweenButton container")
+                end
+            else
+                local v374 = v372:FindFirstChild("Glow")
+                if v374 ~= nil and v374:IsA("ImageLabel") then
+                    v_u_56 = v374
+                    local v375 = v374:FindFirstChild("GlowGradient")
+                    if v375 ~= nil and v375:IsA("UIGradient") then
+                        v_u_57 = v375
+                    end
+                end
+                local v376 = v373:FindFirstChild("Icon")
+                if v376 ~= nil and v376:IsA("ImageLabel") then
+                    v_u_58 = v376
+                    v_u_59 = v376.Position
+                end
+                local v377 = v372:FindFirstChild("Notification")
+                if v377 == nil or not v377:IsA("GuiObject") then
+                    v377 = nil
+                end
+                if v377 ~= nil then
+                    v377.Visible = false
+                    v_u_55 = v377
+                end
+                v372.Visible = false
+                local function v378()
+                    -- upvalues: (ref) v_u_37, (ref) v_u_26, (ref) v_u_11
+                    if v_u_37 ~= nil then
+                        v_u_26:Play()
+                        v_u_11:ResetMenus(v_u_37)
+                    end
+                end
+                v_u_12.apply(v373)
+                v373.Activated:Connect(v378)
+                v_u_54 = v372
+                return
+            end
+        end
+    end
+end
+function v69.Init(_) -- name: Init
+    -- upvalues: (copy) v_u_24, (copy) v_u_36, (ref) v_u_37, (ref) v_u_38, (ref) v_u_39, (ref) v_u_40, (copy) v_u_329, (ref) v_u_41, (copy) v_u_73, (ref) v_u_42, (ref) v_u_43, (ref) v_u_44, (ref) v_u_45, (ref) v_u_46, (ref) v_u_47, (ref) v_u_48, (ref) v_u_52, (copy) v_u_370, (copy) v_u_354, (copy) v_u_12, (copy) v_u_64, (copy) v_u_18, (copy) v_u_19, (copy) v_u_65, (copy) v_u_139, (copy) v_u_266, (copy) v_u_204, (ref) v_u_31, (ref) v_u_30, (copy) v_u_81, (ref) v_u_33, (copy) v_u_277, (copy) v_u_351, (ref) v_u_54, (copy) v_u_17, (copy) v_u_23, (copy) v_u_119, (ref) v_u_55, (copy) v_u_106, (copy) v_u_134, (ref) v_u_34, (ref) v_u_51, (copy) v_u_26, (copy) v_u_7, (copy) v_u_13, (copy) v_u_1, (copy) v_u_100, (copy) v_u_91, (copy) v_u_379, (ref) v_u_28
+    local v380 = v_u_24:FindFirstChild("halloweenGui")
+    if v380 == nil then
+        if not v_u_36.gui then
+            v_u_36.gui = true
+            warn("[HalloweenPass] halloweenGui is missing")
+        end
+    else
+        local v381 = v380:FindFirstChild("Battlepass")
+        if v381 == nil or not v381:IsA("GuiObject") then
+            v381 = nil
+        end
+        v_u_37 = v381
+        local v382 = v380:FindFirstChild("DailyQuests")
+        if v382 == nil or not v382:IsA("GuiObject") then
+            v382 = nil
+        end
+        v_u_38 = v382
+        if v_u_37 == nil or v_u_38 == nil then
+            if not v_u_36.frames then
+                v_u_36.frames = true
+                warn("[HalloweenPass] Battlepass or DailyQuests is missing")
+            end
+        else
+            local v383 = v_u_37:FindFirstChild("ScrollingFrame")
+            local v384 = v_u_38:FindFirstChild("ScrollingFrame")
+            if v383 == nil or not v383:IsA("ScrollingFrame") then
+                v383 = nil
+            end
+            v_u_39 = v383
+            if v384 == nil or not v384:IsA("ScrollingFrame") then
+                v384 = nil
+            end
+            v_u_40 = v384
+            if v_u_40 ~= nil then
+                v_u_40:GetPropertyChangedSignal("AbsoluteSize"):Connect(v_u_329)
+            end
+            local v385 = v_u_73(v_u_37, "Elements/Content/PassXPBar/CurrentXP")
+            if v385 == nil or not v385:IsA("TextLabel") then
+                v385 = nil
+            end
+            v_u_41 = v385
+            local v386 = v_u_73(v_u_37, "Elements/Content/NextTier/NextXP")
+            if v386 == nil or not v386:IsA("TextLabel") then
+                v386 = nil
+            end
+            v_u_42 = v386
+            local v387 = v_u_73(v_u_37, "Elements/Content/PassXPBar/Bar/Fill")
+            if v387 == nil or not v387:IsA("GuiObject") then
+                v387 = nil
+            end
+            v_u_43 = v387
+            local v388 = v_u_73(v_u_37, "Elements/SkipTier/ButtonLabel")
+            if v388 == nil or not v388:IsA("TextLabel") then
+                v388 = nil
+            end
+            v_u_44 = v388
+            local v389 = v_u_73(v_u_38, "Elements/Content/ResetsIn/NextXP")
+            if v389 == nil or not v389:IsA("TextLabel") then
+                v389 = nil
+            end
+            v_u_45 = v389
+            local v390 = v_u_73(v_u_38, "Elements/EarnXPInfo/Desc")
+            if v390 == nil or not v390:IsA("TextLabel") then
+                v390 = nil
+            end
+            v_u_46 = v390
+            v_u_47 = v_u_46 == nil and "" or v_u_46.Text
+            local v391
+            if v_u_39 == nil then
+                v391 = nil
+            else
+                v391 = v_u_39:FindFirstChild("Grandprize")
+            end
+            if v391 == nil or not v391:IsA("GuiObject") then
+                v391 = nil
+            end
+            v_u_48 = v391
+            local v392
+            if v_u_40 == nil then
+                v392 = nil
+            else
+                v392 = v_u_40:FindFirstChild("Templates")
+            end
+            local v393
+            if v392 == nil then
+                v393 = nil
+            else
+                v393 = v392:FindFirstChild("SectionHeader")
+            end
+            if v393 == nil or not v393:IsA("GuiObject") then
+                v393 = nil
+            end
+            v_u_52 = v393
+            v_u_370(v_u_37)
+            v_u_370(v_u_38)
+            local v394 = v_u_37
+            local v395 = v_u_73(v394, "Elements/ExitButton")
+            if v395 == nil or not v395:IsA("GuiButton") then
+                v395 = nil
+            end
+            if v395 == nil then
+                local v396 = ("[HalloweenPass] missing ExitButton on %*"):format(v394.Name)
+                if not v_u_36.exit then
+                    v_u_36.exit = true
+                    warn(v396)
+                end
+            else
+                local v397 = v_u_354
+                v_u_12.apply(v395)
+                v395.Activated:Connect(v397)
+            end
+            local v398 = v_u_38
+            local v399 = v_u_73(v398, "Elements/ExitButton")
+            if v399 == nil or not v399:IsA("GuiButton") then
+                v399 = nil
+            end
+            if v399 == nil then
+                local v400 = ("[HalloweenPass] missing ExitButton on %*"):format(v398.Name)
+                if not v_u_36.exit then
+                    v_u_36.exit = true
+                    warn(v400)
+                end
+            else
+                local v401 = v_u_354
+                v_u_12.apply(v399)
+                v399.Activated:Connect(v401)
+            end
+            local v_u_402 = v_u_37
+            v_u_402:GetPropertyChangedSignal("Visible"):Connect(function()
+                -- upvalues: (ref) v_u_37, (ref) v_u_64, (ref) v_u_18, (ref) v_u_19, (ref) v_u_65, (copy) v_u_402, (ref) v_u_139, (ref) v_u_266, (ref) v_u_38, (ref) v_u_48, (ref) v_u_204, (ref) v_u_31, (ref) v_u_30, (ref) v_u_81, (ref) v_u_33, (ref) v_u_277, (ref) v_u_351, (ref) v_u_54, (ref) v_u_17, (ref) v_u_23, (ref) v_u_119, (ref) v_u_55, (ref) v_u_106, (ref) v_u_134, (ref) v_u_45, (ref) v_u_34
+                local v403
+                if v_u_37 == nil then
+                    v403 = false
+                else
+                    v403 = v_u_37.Visible
+                end
+                for _, v404 in v_u_64 do
+                    local v405
+                    if v403 then
+                        v405 = v_u_18
+                    else
+                        v405 = v_u_19
+                    end
+                    v404.ImageColor3 = v405
+                end
+                for _, v406 in v_u_65 do
+                    local v407
+                    if v403 then
+                        v407 = v_u_19
+                    else
+                        v407 = v_u_18
+                    end
+                    v406.ImageColor3 = v407
+                end
+                if v_u_402 == v_u_37 then
+                    v_u_139(v_u_402.Visible)
+                end
+                local v408 = v_u_266
+                local v409 = v_u_37 ~= nil and v_u_37.Visible
+                if not v409 then
+                    if v_u_38 == nil then
+                        v409 = false
+                    else
+                        v409 = v_u_38.Visible
+                    end
+                end
+                v408(v409)
+                if v_u_48 ~= nil then
+                    v_u_204(v_u_48)
+                end
+                if v_u_402.Visible then
+                    v_u_31 = v_u_402 == v_u_37
+                    if not v_u_30 then
+                        v_u_30 = true
+                        task.spawn(function()
+                            -- upvalues: (ref) v_u_81, (ref) v_u_30, (ref) v_u_33, (ref) v_u_277, (ref) v_u_351, (ref) v_u_54, (ref) v_u_17, (ref) v_u_23, (ref) v_u_119, (ref) v_u_55, (ref) v_u_106, (ref) v_u_134, (ref) v_u_37, (ref) v_u_64, (ref) v_u_18, (ref) v_u_19, (ref) v_u_65
+                            local v410 = v_u_81("GetState")
+                            v_u_30 = false
+                            if v410 ~= nil and (v410.Ok == true and v410.State ~= nil) then
+                                local v411 = v410.State
+                                local v412
+                                if type(v411) == "table" then
+                                    local v413 = v411.SeasonId
+                                    if type(v413) == "string" and v411.SeasonId ~= "" then
+                                        local v414 = v411.Tier
+                                        if type(v414) == "number" then
+                                            local v415 = v411.Daily
+                                            if type(v415) == "table" then
+                                                local v416 = v411.Season
+                                                v412 = type(v416) == "table"
+                                            else
+                                                v412 = false
+                                            end
+                                        else
+                                            v412 = false
+                                        end
+                                    else
+                                        v412 = false
+                                    end
+                                else
+                                    v412 = false
+                                end
+                                if v412 then
+                                    local v417 = v410.State
+                                    v_u_33 = v417
+                                    v_u_277(v417)
+                                    v_u_351(v417)
+                                    if v_u_54 ~= nil then
+                                        local v418 = v_u_33
+                                        local v419 = v418 == nil or v418.Active
+                                        if v419 then
+                                            v419 = not v_u_17.IsInGym(v_u_23)
+                                        end
+                                        v_u_54.Visible = v419
+                                        v_u_119(v419)
+                                        if v_u_55 ~= nil then
+                                            local v420 = v_u_55
+                                            if v419 then
+                                                if v418 == nil then
+                                                    v419 = false
+                                                else
+                                                    v419 = v_u_106(v418)
+                                                end
+                                            end
+                                            v420.Visible = v419
+                                        end
+                                    end
+                                    v_u_134()
+                                    local v421
+                                    if v_u_37 == nil then
+                                        v421 = false
+                                    else
+                                        v421 = v_u_37.Visible
+                                    end
+                                    for _, v422 in v_u_64 do
+                                        local v423
+                                        if v421 then
+                                            v423 = v_u_18
+                                        else
+                                            v423 = v_u_19
+                                        end
+                                        v422.ImageColor3 = v423
+                                    end
+                                    for _, v424 in v_u_65 do
+                                        local v425
+                                        if v421 then
+                                            v425 = v_u_19
+                                        else
+                                            v425 = v_u_18
+                                        end
+                                        v424.ImageColor3 = v425
+                                    end
+                                    return
+                                end
+                            end
+                        end)
+                    end
+                    v_u_134()
+                    if v_u_402 == v_u_38 then
+                        local v426 = v_u_45
+                        local v427 = v_u_34 - os.clock()
+                        local v428 = math.floor(v427)
+                        local v429 = math.max(0, v428)
+                        local v430 = v429 // 3600
+                        local v431 = v429 % 3600 // 60
+                        local v432
+                        if v430 > 0 then
+                            v432 = ("Resets In: %*h %*m"):format(v430, v431)
+                        else
+                            v432 = ("Resets In: %*m %*s"):format(v431, v429 % 60)
+                        end
+                        if v426 ~= nil and v426:IsA("TextLabel") then
+                            v426.Text = v432
+                        end
+                    end
+                end
+            end)
+            local v_u_433 = v_u_38
+            v_u_433:GetPropertyChangedSignal("Visible"):Connect(function()
+                -- upvalues: (ref) v_u_37, (ref) v_u_64, (ref) v_u_18, (ref) v_u_19, (ref) v_u_65, (copy) v_u_433, (ref) v_u_139, (ref) v_u_266, (ref) v_u_38, (ref) v_u_48, (ref) v_u_204, (ref) v_u_31, (ref) v_u_30, (ref) v_u_81, (ref) v_u_33, (ref) v_u_277, (ref) v_u_351, (ref) v_u_54, (ref) v_u_17, (ref) v_u_23, (ref) v_u_119, (ref) v_u_55, (ref) v_u_106, (ref) v_u_134, (ref) v_u_45, (ref) v_u_34
+                local v434
+                if v_u_37 == nil then
+                    v434 = false
+                else
+                    v434 = v_u_37.Visible
+                end
+                for _, v435 in v_u_64 do
+                    local v436
+                    if v434 then
+                        v436 = v_u_18
+                    else
+                        v436 = v_u_19
+                    end
+                    v435.ImageColor3 = v436
+                end
+                for _, v437 in v_u_65 do
+                    local v438
+                    if v434 then
+                        v438 = v_u_19
+                    else
+                        v438 = v_u_18
+                    end
+                    v437.ImageColor3 = v438
+                end
+                if v_u_433 == v_u_37 then
+                    v_u_139(v_u_433.Visible)
+                end
+                local v439 = v_u_266
+                local v440 = v_u_37 ~= nil and v_u_37.Visible
+                if not v440 then
+                    if v_u_38 == nil then
+                        v440 = false
+                    else
+                        v440 = v_u_38.Visible
+                    end
+                end
+                v439(v440)
+                if v_u_48 ~= nil then
+                    v_u_204(v_u_48)
+                end
+                if v_u_433.Visible then
+                    v_u_31 = v_u_433 == v_u_37
+                    if not v_u_30 then
+                        v_u_30 = true
+                        task.spawn(function()
+                            -- upvalues: (ref) v_u_81, (ref) v_u_30, (ref) v_u_33, (ref) v_u_277, (ref) v_u_351, (ref) v_u_54, (ref) v_u_17, (ref) v_u_23, (ref) v_u_119, (ref) v_u_55, (ref) v_u_106, (ref) v_u_134, (ref) v_u_37, (ref) v_u_64, (ref) v_u_18, (ref) v_u_19, (ref) v_u_65
+                            local v441 = v_u_81("GetState")
+                            v_u_30 = false
+                            if v441 ~= nil and (v441.Ok == true and v441.State ~= nil) then
+                                local v442 = v441.State
+                                local v443
+                                if type(v442) == "table" then
+                                    local v444 = v442.SeasonId
+                                    if type(v444) == "string" and v442.SeasonId ~= "" then
+                                        local v445 = v442.Tier
+                                        if type(v445) == "number" then
+                                            local v446 = v442.Daily
+                                            if type(v446) == "table" then
+                                                local v447 = v442.Season
+                                                v443 = type(v447) == "table"
+                                            else
+                                                v443 = false
+                                            end
+                                        else
+                                            v443 = false
+                                        end
+                                    else
+                                        v443 = false
+                                    end
+                                else
+                                    v443 = false
+                                end
+                                if v443 then
+                                    local v448 = v441.State
+                                    v_u_33 = v448
+                                    v_u_277(v448)
+                                    v_u_351(v448)
+                                    if v_u_54 ~= nil then
+                                        local v449 = v_u_33
+                                        local v450 = v449 == nil or v449.Active
+                                        if v450 then
+                                            v450 = not v_u_17.IsInGym(v_u_23)
+                                        end
+                                        v_u_54.Visible = v450
+                                        v_u_119(v450)
+                                        if v_u_55 ~= nil then
+                                            local v451 = v_u_55
+                                            if v450 then
+                                                if v449 == nil then
+                                                    v450 = false
+                                                else
+                                                    v450 = v_u_106(v449)
+                                                end
+                                            end
+                                            v451.Visible = v450
+                                        end
+                                    end
+                                    v_u_134()
+                                    local v452
+                                    if v_u_37 == nil then
+                                        v452 = false
+                                    else
+                                        v452 = v_u_37.Visible
+                                    end
+                                    for _, v453 in v_u_64 do
+                                        local v454
+                                        if v452 then
+                                            v454 = v_u_18
+                                        else
+                                            v454 = v_u_19
+                                        end
+                                        v453.ImageColor3 = v454
+                                    end
+                                    for _, v455 in v_u_65 do
+                                        local v456
+                                        if v452 then
+                                            v456 = v_u_19
+                                        else
+                                            v456 = v_u_18
+                                        end
+                                        v455.ImageColor3 = v456
+                                    end
+                                    return
+                                end
+                            end
+                        end)
+                    end
+                    v_u_134()
+                    if v_u_433 == v_u_38 then
+                        local v457 = v_u_45
+                        local v458 = v_u_34 - os.clock()
+                        local v459 = math.floor(v458)
+                        local v460 = math.max(0, v459)
+                        local v461 = v460 // 3600
+                        local v462 = v460 % 3600 // 60
+                        local v463
+                        if v461 > 0 then
+                            v463 = ("Resets In: %*h %*m"):format(v461, v462)
+                        else
+                            v463 = ("Resets In: %*m %*s"):format(v462, v460 % 60)
+                        end
+                        if v457 ~= nil and v457:IsA("TextLabel") then
+                            v457.Text = v463
+                        end
+                    end
+                end
+            end)
+            local v464 = v_u_73(v_u_37, "Elements/SkipTier")
+            if v464 == nil or not v464:IsA("GuiButton") then
+                v464 = nil
+            end
+            v_u_51 = v464
+            if v_u_51 ~= nil then
+                local v465 = v_u_51
+                local function v466()
+                    -- upvalues: (ref) v_u_26, (ref) v_u_7, (ref) v_u_13, (ref) v_u_1, (ref) v_u_23
+                    v_u_26:Play()
+                    if v_u_7.SKIP_TIER_PRODUCT_ID <= 0 then
+                        v_u_13.play("Tier skip is coming soon.")
+                    else
+                        v_u_1:PromptProductPurchase(v_u_23, v_u_7.SKIP_TIER_PRODUCT_ID)
+                    end
+                end
+                v_u_12.apply(v465)
+                v465.Activated:Connect(v466)
+            end
+            local v467 = nil
+            for _, v468 in { "Restock", "RestockButton", "Reroll" } do
+                local v469 = v_u_38:FindFirstChild(v468, true)
+                if v469 == nil or not v469:IsA("GuiButton") then
+                    continue
+                end
+                v467 = v469
+            end
+            if v467 ~= nil then
+                local function v470()
+                    -- upvalues: (ref) v_u_26, (ref) v_u_1, (ref) v_u_23, (ref) v_u_7
+                    v_u_26:Play()
+                    v_u_1:PromptProductPurchase(v_u_23, v_u_7.RESTOCK_PRODUCT_ID)
+                end
+                v_u_12.apply(v467)
+                v467.Activated:Connect(v470)
+            end
+            if v_u_48 ~= nil then
+                local v471 = v_u_100(v_u_48)
+                if v471 ~= nil then
+                    local function v473()
+                        -- upvalues: (ref) v_u_33, (ref) v_u_91
+                        local v472 = v_u_33
+                        if v472 ~= nil and (v472.FinalUnlocked and not v472.FinalClaimed) then
+                            v_u_91("ClaimFinal")
+                        end
+                    end
+                    v_u_12.apply(v471)
+                    v471.Activated:Connect(v473)
+                end
+            end
+            v_u_379()
+            local v474
+            if v_u_37 == nil then
+                v474 = false
+            else
+                v474 = v_u_37.Visible
+            end
+            for _, v475 in v_u_64 do
+                local v476
+                if v474 then
+                    v476 = v_u_18
+                else
+                    v476 = v_u_19
+                end
+                v475.ImageColor3 = v476
+            end
+            for _, v477 in v_u_65 do
+                local v478
+                if v474 then
+                    v478 = v_u_19
+                else
+                    v478 = v_u_18
+                end
+                v477.ImageColor3 = v478
+            end
+            v_u_28 = true
+            return
+        end
+    end
+end
+function v69.Start(_) -- name: Start
+    -- upvalues: (ref) v_u_28, (copy) v_u_3, (copy) v_u_7, (ref) v_u_32, (copy) v_u_5, (ref) v_u_33, (copy) v_u_277, (copy) v_u_351, (ref) v_u_54, (copy) v_u_17, (copy) v_u_23, (copy) v_u_119, (ref) v_u_55, (copy) v_u_106, (copy) v_u_134, (ref) v_u_37, (copy) v_u_64, (copy) v_u_18, (copy) v_u_19, (copy) v_u_65, (copy) v_u_123, (ref) v_u_38, (ref) v_u_45, (ref) v_u_34
+    if v_u_28 then
+        task.spawn(function()
+            -- upvalues: (ref) v_u_3, (ref) v_u_7, (ref) v_u_32
+            local v479 = v_u_3:WaitForChild("rEvents", 30)
+            local v480
+            if v479 == nil then
+                v480 = nil
+            else
+                v480 = v479:WaitForChild(v_u_7.REMOTE_NAME, 30)
+            end
+            if v480 ~= nil and v480:IsA("RemoteFunction") then
+                v_u_32 = v480
+            end
+        end)
+        local v481 = v_u_5.get("HalloweenPass")
+        local v482 = v481.Data
+        if v482 ~= nil then
+            local v483
+            if type(v482) == "table" then
+                local v484 = v482.SeasonId
+                if type(v484) == "string" and v482.SeasonId ~= "" then
+                    local v485 = v482.Tier
+                    if type(v485) == "number" then
+                        local v486 = v482.Daily
+                        if type(v486) == "table" then
+                            local v487 = v482.Season
+                            v483 = type(v487) == "table"
+                        else
+                            v483 = false
+                        end
+                    else
+                        v483 = false
+                    end
+                else
+                    v483 = false
+                end
+            else
+                v483 = false
+            end
+            if v483 then
+                v_u_33 = v482
+                v_u_277(v482)
+                v_u_351(v482)
+                if v_u_54 ~= nil then
+                    local v488 = v_u_33
+                    local v489 = v488 == nil or v488.Active
+                    if v489 then
+                        v489 = not v_u_17.IsInGym(v_u_23)
+                    end
+                    v_u_54.Visible = v489
+                    v_u_119(v489)
+                    if v_u_55 ~= nil then
+                        local v490 = v_u_55
+                        if v489 then
+                            if v488 == nil then
+                                v489 = false
+                            else
+                                v489 = v_u_106(v488)
+                            end
+                        end
+                        v490.Visible = v489
+                    end
+                end
+                v_u_134()
+                local v491
+                if v_u_37 == nil then
+                    v491 = false
+                else
+                    v491 = v_u_37.Visible
+                end
+                for _, v492 in v_u_64 do
+                    local v493
+                    if v491 then
+                        v493 = v_u_18
+                    else
+                        v493 = v_u_19
+                    end
+                    v492.ImageColor3 = v493
+                end
+                for _, v494 in v_u_65 do
+                    local v495
+                    if v491 then
+                        v495 = v_u_19
+                    else
+                        v495 = v_u_18
+                    end
+                    v494.ImageColor3 = v495
+                end
+            end
+        end
+        v481:ListenRaw(function(p496)
+            -- upvalues: (ref) v_u_33, (ref) v_u_277, (ref) v_u_351, (ref) v_u_54, (ref) v_u_17, (ref) v_u_23, (ref) v_u_119, (ref) v_u_55, (ref) v_u_106, (ref) v_u_134, (ref) v_u_37, (ref) v_u_64, (ref) v_u_18, (ref) v_u_19, (ref) v_u_65
+            local v497
+            if type(p496) == "table" then
+                local v498 = p496.SeasonId
+                if type(v498) == "string" and p496.SeasonId ~= "" then
+                    local v499 = p496.Tier
+                    if type(v499) == "number" then
+                        local v500 = p496.Daily
+                        if type(v500) == "table" then
+                            local v501 = p496.Season
+                            v497 = type(v501) == "table"
+                        else
+                            v497 = false
+                        end
+                    else
+                        v497 = false
+                    end
+                else
+                    v497 = false
+                end
+            else
+                v497 = false
+            end
+            if v497 then
+                v_u_33 = p496
+                v_u_277(p496)
+                v_u_351(p496)
+                if v_u_54 ~= nil then
+                    local v502 = v_u_33
+                    local v503 = v502 == nil or v502.Active
+                    if v503 then
+                        v503 = not v_u_17.IsInGym(v_u_23)
+                    end
+                    v_u_54.Visible = v503
+                    v_u_119(v503)
+                    if v_u_55 ~= nil then
+                        local v504 = v_u_55
+                        if v503 then
+                            if v502 == nil then
+                                v503 = false
+                            else
+                                v503 = v_u_106(v502)
+                            end
+                        end
+                        v504.Visible = v503
+                    end
+                end
+                v_u_134()
+                local v505
+                if v_u_37 == nil then
+                    v505 = false
+                else
+                    v505 = v_u_37.Visible
+                end
+                for _, v506 in v_u_64 do
+                    local v507
+                    if v505 then
+                        v507 = v_u_18
+                    else
+                        v507 = v_u_19
+                    end
+                    v506.ImageColor3 = v507
+                end
+                for _, v508 in v_u_65 do
+                    local v509
+                    if v505 then
+                        v509 = v_u_19
+                    else
+                        v509 = v_u_18
+                    end
+                    v508.ImageColor3 = v509
+                end
+            end
+        end)
+        if v_u_54 ~= nil then
+            local v510 = v_u_33
+            local v511 = v510 == nil or v510.Active
+            if v511 then
+                v511 = not v_u_17.IsInGym(v_u_23)
+            end
+            v_u_54.Visible = v511
+            v_u_119(v511)
+            if v_u_55 ~= nil then
+                local v512 = v_u_55
+                if v511 then
+                    if v510 == nil then
+                        v511 = false
+                    else
+                        v511 = v_u_106(v510)
+                    end
+                end
+                v512.Visible = v511
+            end
+        end
+        task.spawn(function()
+            -- upvalues: (ref) v_u_23, (ref) v_u_123, (ref) v_u_54, (ref) v_u_33, (ref) v_u_17, (ref) v_u_119, (ref) v_u_55, (ref) v_u_106
+            local v513 = v_u_23:WaitForChild("currentMap", 30)
+            if v513 ~= nil and v513:IsA("StringValue") then
+                v513.Changed:Connect(v_u_123)
+                if v_u_54 == nil then
+                    return
+                end
+                local v514 = v_u_33
+                local v515 = v514 == nil or v514.Active
+                if v515 then
+                    v515 = not v_u_17.IsInGym(v_u_23)
+                end
+                v_u_54.Visible = v515
+                v_u_119(v515)
+                if v_u_55 ~= nil then
+                    local v516 = v_u_55
+                    if v515 then
+                        if v514 == nil then
+                            v515 = false
+                        else
+                            v515 = v_u_106(v514)
+                        end
+                    end
+                    v516.Visible = v515
+                end
+            end
+        end)
+        task.spawn(function()
+            -- upvalues: (ref) v_u_38, (ref) v_u_45, (ref) v_u_34
+            while true do
+                repeat
+                    task.wait(1)
+                until v_u_38 ~= nil and v_u_38.Visible
+                local v517 = v_u_45
+                local v518 = v_u_34 - os.clock()
+                local v519 = math.floor(v518)
+                local v520 = math.max(0, v519)
+                local v521 = v520 // 3600
+                local v522 = v520 % 3600 // 60
+                local v523
+                if v521 > 0 then
+                    v523 = ("Resets In: %*h %*m"):format(v521, v522)
+                else
+                    v523 = ("Resets In: %*m %*s"):format(v522, v520 % 60)
+                end
+                if v517 == nil or not v517:IsA("TextLabel") then
+                    continue
+                end
+                v517.Text = v523
+            end
+        end)
+    end
+end
+return v69
