@@ -1,0 +1,147 @@
+-- Script Path: game:GetService("ReplicatedStorage").shared.config.HalloweenPassConfig
+-- Took 0s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+local v1 = require("@game/ReplicatedStorage/UserGenerated/Lang/Asserts")
+local v2 = require("@game/ReplicatedStorage/UserGenerated/FastFlags")
+require("@game/ReplicatedStorage/shared/config/DailyRewardConfig")
+local v3 = v2.Replicated("Game.HalloweenPass.Enabled", v1.Boolean, false)
+local v_u_4 = {
+    150,
+    150,
+    175,
+    200,
+    225,
+    250,
+    300,
+    300,
+    300
+}
+local v_u_5 = {
+    {
+        {
+            ["Type"] = "CandyCorn",
+            ["Amount"] = 3000
+        }
+    },
+    {
+        {
+            ["Type"] = "Aura",
+            ["Name"] = "Pumpkin Aura",
+            ["Amount"] = 1,
+            ["Image"] = "rbxassetid://75802191996187"
+        }
+    },
+    {
+        {
+            ["Type"] = "PetXpBoost",
+            ["Name"] = "I",
+            ["Amount"] = 3
+        }
+    },
+    {
+        {
+            ["Type"] = "Aura",
+            ["Name"] = "Vampire Aura",
+            ["Amount"] = 1,
+            ["Image"] = "rbxassetid://95042914736496"
+        }
+    },
+    {
+        {
+            ["Type"] = "CandyCorn",
+            ["Amount"] = 5000
+        }
+    },
+    {
+        {
+            ["Type"] = "Aura",
+            ["Name"] = "Pumpkin Aura",
+            ["Amount"] = 1,
+            ["Image"] = "rbxassetid://75802191996187"
+        }
+    },
+    {
+        {
+            ["Type"] = "PetXpBoost",
+            ["Name"] = "II",
+            ["Amount"] = 3
+        }
+    },
+    {
+        {
+            ["Type"] = "Aura",
+            ["Name"] = "Vampire Aura",
+            ["Amount"] = 1,
+            ["Image"] = "rbxassetid://95042914736496"
+        }
+    },
+    {
+        {
+            ["Type"] = "CandyCorn",
+            ["Amount"] = 8000
+        }
+    },
+    {
+        {
+            ["Type"] = "PetXpBoost",
+            ["Name"] = "III",
+            ["Amount"] = 3
+        },
+        {
+            ["Type"] = "CandyCorn",
+            ["Amount"] = 2000
+        }
+    }
+}
+local v10 = {
+    ["SEASON_ID"] = "2026-Halloween",
+    ["ENDS_AT"] = 1793491200,
+    ["MAX_TIER"] = 10,
+    ["FINAL_PRESTIGES_REQUIRED"] = 3,
+    ["DAILY_QUEST_COUNT"] = 3,
+    ["SKIP_TIER_PRODUCT_ID"] = 3717268499,
+    ["RESTOCK_PRODUCT_ID"] = 3717267777,
+    ["CLAIM_REQUEST_INTERVAL"] = 0.25,
+    ["LIST_REQUEST_INTERVAL"] = 0.5,
+    ["SOURCE"] = "HalloweenPass",
+    ["REMOTE_NAME"] = "halloweenPassRemote",
+    ["Enabled"] = nil,
+    ["TIER_EXP_TO_NEXT"] = nil,
+    ["TIERS"] = nil,
+    ["FINAL_REWARD"] = nil,
+    ["Enabled"] = v3,
+    ["TIER_EXP_TO_NEXT"] = v_u_4,
+    ["TIERS"] = (function() -- name: buildTiers
+        -- upvalues: (copy) v_u_4, (copy) v_u_5
+        if #v_u_4 ~= 9 then
+            error((("[HalloweenPass] expected %* tier deltas, got %*"):format(9, #v_u_4)))
+        end
+        if #v_u_5 ~= 10 then
+            error((("[HalloweenPass] expected %* tier rewards, got %*"):format(10, #v_u_5)))
+        end
+        local v6 = 0
+        local v7 = {}
+        for v8 = 1, 10 do
+            v7[v8] = {
+                ["Tier"] = v8,
+                ["ExpRequired"] = v6,
+                ["Rewards"] = v_u_5[v8]
+            }
+            local v9 = v_u_4[v8]
+            if v9 == nil then
+                continue
+            end
+            v6 = v6 + v9
+        end
+        return v7
+    end)(),
+    ["FINAL_REWARD"] = {
+        ["Type"] = "Pet",
+        ["Name"] = "Infernal Steed",
+        ["Amount"] = 1,
+        ["Evolved"] = true,
+        ["Image"] = "rbxassetid://113691847249077"
+    }
+}
+return table.freeze(v10)
