@@ -1,0 +1,262 @@
+-- Script Path: game:GetService("ReplicatedStorage").shared.config.HalloweenWheelConfig
+-- Took 0.02s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+local v1 = require("@game/ReplicatedStorage/shared/config/CandyCornConfig")
+local v2 = require("@game/ReplicatedStorage/shared/config/HalloweenElixirConfig")
+local v3 = require("@game/ReplicatedStorage/shared/modules/SpookyTrait")
+local v4 = table.freeze
+local v5 = {}
+local v6 = table.freeze({
+    ["Key"] = "SpookyTrait",
+    ["Kind"] = "SpookyTrait",
+    ["Tier"] = 1,
+    ["Name"] = nil,
+    ["Chance"] = 0.5,
+    ["Image"] = nil,
+    ["Color"] = nil,
+    ["Rarity"] = "Pet Trait",
+    ["Name"] = v3.ITEM_NAME,
+    ["Image"] = v3.ITEM_ICON,
+    ["Color"] = Color3.fromRGB(170, 85, 255)
+})
+local v7 = table.freeze
+local v8 = {
+    ["Key"] = "CursedMight",
+    ["Kind"] = "Elixir",
+    ["Tier"] = 4,
+    ["Name"] = nil,
+    ["Chance"] = 7,
+    ["Image"] = nil,
+    ["Color"] = nil,
+    ["Rarity"] = "Elixir",
+    ["Elixir"] = "Cursed Might Elixir"
+}
+local v9 = v2.ByName["Cursed Might Elixir"]
+local v10 = v9 ~= nil
+assert(v10, "[HalloweenWheelConfig] no elixir named Cursed Might Elixir")
+v8.Name = v9.Name
+local v11 = v2.ByName["Cursed Might Elixir"]
+local v12 = v11 ~= nil
+assert(v12, "[HalloweenWheelConfig] no elixir named Cursed Might Elixir")
+v8.Image = v11.Image
+local v13 = v2.ByName["Cursed Might Elixir"]
+local v14 = v13 ~= nil
+assert(v14, "[HalloweenWheelConfig] no elixir named Cursed Might Elixir")
+v8.Color = v13.Color
+local v15 = v7(v8)
+local v16 = table.freeze
+local v17 = {
+    ["Key"] = "Undying",
+    ["Kind"] = "Elixir",
+    ["Tier"] = 3,
+    ["Name"] = nil,
+    ["Chance"] = 10,
+    ["Image"] = nil,
+    ["Color"] = nil,
+    ["Rarity"] = "Elixir",
+    ["Elixir"] = "Undying Elixir"
+}
+local v18 = v2.ByName["Undying Elixir"]
+local v19 = v18 ~= nil
+assert(v19, "[HalloweenWheelConfig] no elixir named Undying Elixir")
+v17.Name = v18.Name
+local v20 = v2.ByName["Undying Elixir"]
+local v21 = v20 ~= nil
+assert(v21, "[HalloweenWheelConfig] no elixir named Undying Elixir")
+v17.Image = v20.Image
+local v22 = v2.ByName["Undying Elixir"]
+local v23 = v22 ~= nil
+assert(v23, "[HalloweenWheelConfig] no elixir named Undying Elixir")
+v17.Color = v22.Color
+local v24 = v16(v17)
+local v25 = table.freeze
+local v26 = {
+    ["Key"] = "Bloodrage",
+    ["Kind"] = "Elixir",
+    ["Tier"] = 2,
+    ["Name"] = nil,
+    ["Chance"] = 18,
+    ["Image"] = nil,
+    ["Color"] = nil,
+    ["Rarity"] = "Elixir",
+    ["Elixir"] = "Bloodrage Elixir"
+}
+local v27 = v2.ByName["Bloodrage Elixir"]
+local v28 = v27 ~= nil
+assert(v28, "[HalloweenWheelConfig] no elixir named Bloodrage Elixir")
+v26.Name = v27.Name
+local v29 = v2.ByName["Bloodrage Elixir"]
+local v30 = v29 ~= nil
+assert(v30, "[HalloweenWheelConfig] no elixir named Bloodrage Elixir")
+v26.Image = v29.Image
+local v31 = v2.ByName["Bloodrage Elixir"]
+local v32 = v31 ~= nil
+assert(v32, "[HalloweenWheelConfig] no elixir named Bloodrage Elixir")
+v26.Color = v31.Color
+__set_list(v5, 1, {v6, v15, v24, v25(v26), table.freeze({
+    ["Key"] = "CandyCornLarge",
+    ["Kind"] = "CandyCorn",
+    ["Tier"] = 5,
+    ["Name"] = "Candy Corn x500",
+    ["Chance"] = 22,
+    ["Image"] = nil,
+    ["Color"] = nil,
+    ["Rarity"] = "Candy Corn",
+    ["Amount"] = 500,
+    ["Image"] = v1.Icon,
+    ["Color"] = v1.AmountColor
+}), table.freeze({
+    ["Key"] = "CandyCornSmall",
+    ["Kind"] = "CandyCorn",
+    ["Tier"] = 6,
+    ["Name"] = "Candy Corn x100",
+    ["Chance"] = 42.5,
+    ["Image"] = nil,
+    ["Color"] = nil,
+    ["Rarity"] = "Candy Corn",
+    ["Amount"] = 100,
+    ["Image"] = v1.Icon,
+    ["Color"] = v1.AmountColor
+})})
+local v_u_33 = v4(v5)
+local v34 = {}
+local v35 = {}
+local v_u_36 = 0
+for _, v37 in v_u_33 do
+    local v38 = v34[v37.Key] == nil
+    local v39 = ("[HalloweenWheelConfig] duplicate reward key %*"):format(v37.Key)
+    assert(v38, v39)
+    local v40 = v35[v37.Tier] == nil
+    local v41 = ("[HalloweenWheelConfig] two rewards on tier %*"):format(v37.Tier)
+    assert(v40, v41)
+    v34[v37.Key] = v37
+    v35[v37.Tier] = v37
+    v_u_36 = v_u_36 + v37.Chance
+end
+local v42 = v_u_36 - 100
+local v43 = math.abs(v42) < 0.001
+local v44 = ("[HalloweenWheelConfig] reward chances total %*, expected 100"):format(v_u_36)
+assert(v43, v44)
+local v49 = {
+    ["ENABLED"] = true,
+    ["SPIN_COST"] = 1,
+    ["SOULS_PER_BOSS_KILL"] = 1,
+    ["SOULS_ICON"] = "rbxassetid://116393041700295",
+    ["SOULS_COLOR"] = nil,
+    ["WHEEL_TAG"] = "HalloweenWheel",
+    ["WHEEL_PROMPT_NAME"] = "halloweenWheelPrompt",
+    ["WHEEL_PROMPT_TEXT"] = "Spin Wheel",
+    ["WHEEL_PROMPT_DISTANCE"] = 50,
+    ["WHEEL_INTERACT_DISTANCE"] = 60,
+    ["WHEEL_PROMPT_ACTIVATION_DISTANCE"] = 1000,
+    ["MENU_GUI_NAME"] = "halloweenWheelGui",
+    ["REMOTE_NAME"] = "halloweenWheelRemote",
+    ["REQUEST_INTERVAL"] = 0.25,
+    ["SPIN_COOLDOWN"] = 2,
+    ["ANALYTICS_WHEEL_NAME"] = "Halloween Wheel",
+    ["REWARDS"] = nil,
+    ["ByKey"] = nil,
+    ["ByTier"] = nil,
+    ["SOULS_COLOR"] = Color3.fromRGB(190, 110, 255),
+    ["REWARDS"] = v_u_33,
+    ["ByKey"] = table.freeze(v34),
+    ["ByTier"] = table.freeze(v35),
+    ["Roll"] = function(p45) -- name: Roll
+        -- upvalues: (ref) v_u_36, (copy) v_u_33
+        local v46 = p45:NextNumber() * v_u_36
+        local v47 = 0
+        for _, v48 in v_u_33 do
+            v47 = v47 + v48.Chance
+            if v46 > v47 then
+                continue
+            end
+            return v48
+        end
+        return v_u_33[#v_u_33]
+    end
+}
+return table.freeze(v49)
+
+-- // Function Dumper made by King.Kevin
+-- // Script Path: game:GetService("ReplicatedStorage").shared.config.HalloweenWheelConfig
+
+--[[
+Function Dump: Roll
+
+Function Upvalues: Roll
+        1 [number] = 100
+        2 [table]:
+        2 [table] table: 0xb44fe75c0ef595ab
+                1 [table]:
+                1 [table] table: 0xe25cb88ae47347b6
+                        1 [string] = Pet Trait
+                        2 [string] = rbxassetid://95543392354772
+                        3 [string] = SpookyTrait
+                        4 [number] = 1
+                        5 [number] = 0.5
+                        6 [string] = SpookyTrait
+                        7 [Color3] = 0.666667, 0.333333, 1
+                        8 [string] = Spooky Trait
+                2 [table]:
+                2 [table] table: 0xc710f16adfa92798
+                        1 [string] = Elixir
+                        2 [Color3] = 1, 0.784314, 0.156863
+                        3 [string] = rbxassetid://80077518050477
+                        4 [string] = CursedMight
+                        5 [number] = 4
+                        6 [number] = 7
+                        7 [string] = Elixir
+                        8 [string] = Cursed Might Elixir
+                        9 [string] = Cursed Might Elixir
+                3 [table]:
+                3 [table] table: 0x195e28663042afa8
+                        1 [string] = Elixir
+                        2 [Color3] = 0.235294, 0.784314, 1
+                        3 [string] = rbxassetid://100796739514764
+                        4 [string] = Undying
+                        5 [number] = 3
+                        6 [number] = 10
+                        7 [string] = Elixir
+                        8 [string] = Undying Elixir
+                        9 [string] = Undying Elixir
+                4 [table]:
+                4 [table] table: 0xacbf51cd1f9b34c2
+                        1 [string] = Elixir
+                        2 [Color3] = 1, 0.27451, 0.27451
+                        3 [string] = rbxassetid://125961125243624
+                        4 [string] = Bloodrage
+                        5 [number] = 2
+                        6 [number] = 18
+                        7 [string] = Elixir
+                        8 [string] = Bloodrage Elixir
+                        9 [string] = Bloodrage Elixir
+                5 [table]:
+                5 [table] table: 0xb639ba883e712f4f
+                        1 [string] = Candy Corn
+                        2 [Color3] = 1, 0.54902, 0
+                        3 [string] = rbxassetid://98212174635998
+                        4 [string] = CandyCornLarge
+                        5 [number] = 5
+                        6 [number] = 22
+                        7 [string] = CandyCorn
+                        8 [number] = 500
+                        9 [string] = Candy Corn x500
+                6 [table]:
+                6 [table] table: 0x9fc3271c1e106c66
+                        1 [string] = Candy Corn
+                        2 [Color3] = 1, 0.54902, 0
+                        3 [string] = rbxassetid://98212174635998
+                        4 [string] = CandyCornSmall
+                        5 [number] = 6
+                        6 [number] = 42.5
+                        7 [string] = CandyCorn
+                        8 [number] = 100
+                        9 [string] = Candy Corn x100
+
+Function Constants: Roll
+        1 [string] = NextNumber
+        2 [string] = Chance
+
+====================================================================================================
+]]
