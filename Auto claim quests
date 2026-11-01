@@ -1,0 +1,115 @@
+--// Carga segura de WindUI
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+end)
+
+if not success or not WindUI then
+    warn("[AutoEnchantQuest] Error al cargar WindUI:", WindUI)
+    return
+end
+
+--// Servicios y Referencias
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+local rEvents = ReplicatedStorage:WaitForChild("rEvents", 30)
+local questsEvent = rEvents and rEvents:WaitForChild("questsEvent", 30)
+
+if not questsEvent then
+    LocalPlayer:Kick("[AutoEnchantQuest] No se encontró el RemoteEvent 'questsEvent'.")
+    return
+end
+
+--// Variables de Estado
+getgenv().AutoClaimEnchantQuests = getgenv().AutoClaimEnchantQuests or false
+
+-- Función para verificar si una misión en el jugador está lista para cobrar
+local function isQuestComplete(questFolder)
+    local requirements = questFolder:FindFirstChild("requirements")
+    if not requirements then return false end
+    
+    local reqList = requirements:GetChildren()
+    if #reqList == 0 then return false end
+
+    for _, req in ipairs(reqList) do
+        local progressVal = req:FindFirstChild("progress")
+        if progressVal and (progressVal:IsA("IntValue") or progressVal:IsA("NumberValue")) then
+            if progressVal.Value < req.Value then
+                return false
+            end
+        else
+            return false
+        end
+    end
+    return true
+end
+
+local function startAutoClaimLoop()
+    task.spawn(function()
+        while getgenv().AutoClaimEnchantQuests do
+            pcall(function()
+                local playerQuests = LocalPlayer:FindFirstChild("Quests")
+                if playerQuests then
+                    for _, categoryFolder in ipairs(playerQuests:GetChildren()) do
+                        -- Escaneamos todas las categorías (Industrial Daily, Enchant Quests, Daily, etc.)
+                        if categoryFolder:IsA("Folder") then
+                            for _, questFolder in ipairs(categoryFolder:GetChildren()) do
+                                if questFolder:IsA("Folder") and questFolder:FindFirstChild("originalQuest") then
+                                    if isQuestComplete(questFolder) then
+                                        print("[AutoClaim] ¡Misión lista! Reclamando:", questFolder.Name)
+                                        -- Pasamos el objeto de la misión asignada al jugador
+                                        questsEvent:FireServer("collectQuest", questFolder)
+                                        task.wait(0.5)
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+            
+            task.wait(1.5)
+        end
+    end)
+end
+
+--// Interfaz WindUI
+local Window = WindUI:CreateWindow({
+    Title = "Muscle Legends | Auto Claim Enchant Quests",
+    Icon = "rbxassetid://116393041700295",
+    Author = "AutoScript",
+    Folder = "MuscleLegendsAutoClaim",
+    Size = UDim2.fromOffset(450, 280),
+    Transparent = true,
+    Theme = "Dark",
+    Resizable = false,
+})
+
+local Tab = Window:Tab({
+    Title = "Auto Claim",
+    Icon = "check-circle"
+})
+
+Tab:Toggle({
+    Title = "Auto Reclamar Misiones Listas",
+    Description = "Detecta misiones de Enchant/Diarias al 100% y cobra la recompensa automáticamente.",
+    Value = getgenv().AutoClaimEnchantQuests,
+    Callback = function(state)
+        getgenv().AutoClaimEnchantQuests = state
+        if state then
+            WindUI:Notify({
+                Title = "Auto Claim",
+                Content = "¡Reclamador automático activado!",
+                Duration = 3
+            })
+            startAutoClaimLoop()
+        else
+            WindUI:Notify({
+                Title = "Auto Claim",
+                Content = "Auto Claim detenido.",
+                Duration = 3
+            })
+        end
+    end
+})
