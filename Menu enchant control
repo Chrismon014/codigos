@@ -1,0 +1,2046 @@
+-- Script Path: game:GetService("ReplicatedStorage").client.controllers.PetEnchantMenuController
+-- Took 0.08s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+local v_u_1 = game:GetService("Debris")
+local v_u_2 = game:GetService("MarketplaceService")
+local v3 = game:GetService("Players")
+local v4 = game:GetService("ReplicatedStorage")
+local v_u_5 = game:GetService("RunService")
+local v_u_6 = require("@game/ReplicatedStorage/packages/Spring")
+local v_u_7 = require("@game/ReplicatedStorage/client/utils/BoostUseConfirm")
+local v_u_8 = require("@game/ReplicatedStorage/client/utils/Glyphs")
+local v_u_9 = require("@game/ReplicatedStorage/client/utils/GuiToast")
+local v10 = require("@game/ReplicatedStorage/client/utils/ItemsMenu")
+local v_u_11 = require("@game/ReplicatedStorage/client/controllers/MenuController")
+local v_u_12 = require("@game/ReplicatedStorage/client/utils/PopupPreference")
+local v_u_13 = require("@game/ReplicatedStorage/client/controllers/PetController")
+local v_u_14 = require("@game/ReplicatedStorage/shared/modules/PetEnchant")
+local v_u_15 = require("@game/ReplicatedStorage/shared/config/PetEnchantConfig")
+local v_u_16 = require("@game/ReplicatedStorage/client/controllers/PetEnchantController")
+local v_u_17 = require("@game/ReplicatedStorage/client/components/PetEnchantMachineComponent")
+local v_u_18 = require("@game/ReplicatedStorage/client/utils/ProductPrice")
+local v_u_19 = require("@game/ReplicatedStorage/client/utils/RarityTheme")
+local v_u_20 = require("@game/ReplicatedStorage/client/controllers/QuestController")
+local v_u_21 = require("@game/ReplicatedStorage/shared/modules/TimeUtil")
+local v_u_22 = require("@game/ReplicatedStorage/client/utils/Tween")
+local v_u_23 = v3.LocalPlayer
+local v_u_24 = v_u_23.PlayerGui
+local v25 = v_u_24.gameGui
+local v_u_26 = v10.Root
+local v_u_27 = v4.rEvents
+local v28 = v4.shared.assets
+local v29 = v28.sounds
+local v_u_30 = v25.powerUpsNotificationsFrame
+local v_u_31 = v28.ui.powerUpNotificationLabel
+local v_u_32 = v29.clickSound
+local v_u_33 = v29.deniedSound
+local v_u_34 = v29.explosionSound
+local v_u_35 = v29.gemsSound
+local v_u_36 = v29.hoverSound
+local v_u_37 = v29.levelUpSound
+local v_u_38 = v29.fortuneTickSound
+local v_u_39 = v4.shared.catalogs.rarityColorsFolder
+local v_u_40 = v4.shared.catalogs.priceTypes
+local v_u_41 = UDim2.fromScale(0.5, 0.04)
+local v_u_42 = UDim2.fromScale(0.377752, 0.359333)
+local v_u_43 = UDim2.fromScale(0.85, 0.85)
+local v_u_44 = UDim2.fromScale(0.5, 0.115)
+local v_u_45 = UDim2.fromScale(0.86, 0.09)
+local v_u_46 = table.freeze({
+    ["IconGap"] = 0.02
+})
+local v_u_47 = table.freeze({
+    ["Position"] = UDim2.fromScale(0.5, 0.0412),
+    ["Size"] = UDim2.fromScale(0.4057, 0.0549),
+    ["TextColor"] = Color3.fromRGB(210, 210, 210)
+})
+local v_u_48 = table.freeze({
+    ["Size"] = nil,
+    ["SpinPosition"] = nil,
+    ["IconSize"] = nil,
+    ["LabelSize"] = nil,
+    ["Gap"] = 0.04,
+    ["Size"] = UDim2.fromScale(0.17, 0.042),
+    ["SpinPosition"] = UDim2.fromScale(0.105, 0.1),
+    ["IconSize"] = UDim2.fromScale(0.18, 1),
+    ["LabelSize"] = UDim2.fromScale(0.76, 1)
+})
+local v_u_49 = Vector2.new(0.5, 0)
+local v_u_50 = UDim2.fromScale(0.5, 0.188)
+local v_u_51 = UDim2.fromScale(0.88, 0.88)
+local v_u_52 = UDim2.fromScale(0.5, 0.353)
+local v_u_53 = UDim2.fromScale(0.76, 0.4)
+local v_u_54 = UDim2.fromScale(0.5, 0.708)
+local v_u_55 = UDim2.fromScale(0.94, 0.28)
+local v_u_56 = Color3.fromRGB(225, 225, 225)
+local v_u_57 = UDim2.fromScale(0.5, 0.95)
+local v_u_58 = UDim2.fromScale(0.92, 0.14)
+local v_u_59 = table.freeze({
+    1,
+    2,
+    1,
+    1,
+    3,
+    1,
+    2,
+    1,
+    1,
+    4,
+    1,
+    2
+})
+local v_u_60 = table.freeze({
+    ["IdleCardsPerSecond"] = 0.22,
+    ["TintDarken"] = 0.6,
+    ["LandedTintDarken"] = 0.4,
+    ["LandedStrokeThickness"] = 0.06,
+    ["TickInterval"] = 0.05,
+    ["RareMinTier"] = 3,
+    ["RareHueSpeed"] = 0.22,
+    ["RareSaturation"] = 0.85,
+    ["SunburstImage"] = "rbxassetid://136460879482817",
+    ["SunburstPosition"] = nil,
+    ["SunburstSize"] = nil,
+    ["SunburstTransparency"] = 0.45,
+    ["SunburstPulse"] = 0.12,
+    ["SunburstPulseSpeed"] = 2.4,
+    ["SunburstDegreesPerSecond"] = 24,
+    ["StatTextScale"] = 0.115,
+    ["SunburstPosition"] = UDim2.fromScale(0.5, 0.498),
+    ["SunburstSize"] = UDim2.fromScale(1.18, 1.18)
+})
+local v_u_61 = table.freeze({
+    ["Name"] = "SkipBTN",
+    ["Text"] = "Skip",
+    ["Color"] = nil,
+    ["LabelSize"] = nil,
+    ["Color"] = Color3.new(1, 1, 1),
+    ["LabelSize"] = UDim2.fromScale(0.8, 0.32)
+})
+local v_u_62 = {}
+local v_u_63 = nil
+local v_u_64 = nil
+local v_u_65 = nil
+local v_u_66 = nil
+local v_u_67 = nil
+local v_u_68 = nil
+local v_u_69 = nil
+local v_u_70 = nil
+local v_u_71 = nil
+local v_u_72 = nil
+local v_u_73 = nil
+local v_u_74 = {}
+local v_u_75 = nil
+local v_u_76 = nil
+local v_u_77 = {}
+local v_u_78 = 0
+local v_u_79 = nil
+local v_u_80 = ""
+local v_u_81 = false
+local v_u_82 = false
+local v_u_83 = "locked"
+local v_u_84 = false
+local v_u_85 = {}
+local v_u_86 = false
+local v_u_87 = false
+local v_u_88 = false
+local v_u_89 = false
+local v_u_90 = "list"
+local v_u_91 = {}
+local v_u_92 = 1
+local v_u_93 = false
+local v_u_94 = 0
+local v_u_95 = 0
+local v_u_96 = 0
+local v_u_97 = 0
+local v_u_98 = 0
+local v_u_99 = nil
+local v_u_100 = nil
+local v_u_101 = nil
+local v_u_102 = nil
+local v_u_103 = v_u_6.new(1, 0.1)
+local v_u_104 = v_u_6.new(0, 0.09)
+local v_u_105 = v_u_6.new(0, 0.16)
+local v_u_106 = v_u_6.new(1, 0.08)
+local v_u_107 = 0
+local v_u_108 = 0
+local v_u_109 = nil
+local v_u_110 = table.freeze({
+    ["HoldTime"] = 0.15384615384615385,
+    ["HoldDistance"] = 0.5952380952380952,
+    ["GlideTime"] = 0.46153846153846156,
+    ["GlideDistance"] = 0.047619047619047616,
+    ["MiddleTime"] = 0.3846153846153846,
+    ["MiddleDistance"] = 0.35714285714285715,
+    ["GlideSpeed"] = 0.20634920634920634,
+    ["Decay"] = 5.07142857142857
+})
+local function v_u_116(p111) -- name: spinEase
+    -- upvalues: (copy) v_u_110
+    local v112 = v_u_110
+    if p111 <= v112.HoldTime then
+        return v112.HoldDistance * (p111 / v112.HoldTime)
+    end
+    if 1 - v112.GlideTime <= p111 then
+        local v113 = (1 - p111) / v112.GlideTime
+        return 1 - v112.GlideDistance * v113 * v113
+    end
+    local v114 = (p111 - v112.HoldTime) / v112.MiddleTime
+    local v115 = v112.GlideSpeed * v112.MiddleTime
+    return v112.HoldDistance + v115 * v114 + (v112.MiddleDistance - v115) * (1 - (1 - v114) ^ v112.Decay)
+end
+local function v_u_119(p117) -- name: rarityTextColor
+    -- upvalues: (copy) v_u_39
+    if p117 == nil or p117 == "Basic" then
+        return Color3.new(1, 1, 1)
+    else
+        local v118 = v_u_39:FindFirstChild(p117)
+        if v118 == nil or not v118:IsA("Color3Value") then
+            return Color3.new(1, 1, 1)
+        else
+            return v118.Value
+        end
+    end
+end
+local v_u_120 = nil
+local function v_u_127(p121) -- name: createNotificationContainer
+    -- upvalues: (copy) v_u_30, (copy) v_u_41, (copy) v_u_24
+    local v122 = Instance.new("ScreenGui")
+    v122.Name = "petEnchantNotificationsGui"
+    v122.ResetOnSpawn = false
+    local v123 = p121.DisplayOrder + 1
+    v122.DisplayOrder = math.max(5, v123)
+    local v124 = v_u_30:Clone()
+    for _, v125 in v124:GetChildren() do
+        if not v125:IsA("GuiObject") then
+            continue
+        end
+        v125:Destroy()
+    end
+    v124.Position = v_u_41
+    local v126 = v124:FindFirstChildOfClass("UIListLayout")
+    if v126 ~= nil then
+        v126.VerticalAlignment = Enum.VerticalAlignment.Top
+    end
+    v124.Parent = v122
+    v122.Parent = v_u_24
+    return v124
+end
+local function v_u_133(p128, p129) -- name: notify
+    -- upvalues: (ref) v_u_120, (copy) v_u_9, (copy) v_u_12, (copy) v_u_31, (copy) v_u_22, (copy) v_u_1
+    local v130 = v_u_120
+    if v130 == nil then
+        v_u_9.play(p128)
+        return
+    elseif v_u_12.IsEnabled() then
+        local v131 = v_u_31:Clone()
+        if v131 ~= nil then
+            v131.Text = p128
+            local v132 = v131:FindFirstChild("shadow")
+            if v132 ~= nil then
+                v132.Text = p128
+            end
+        end
+        if p129 ~= nil then
+            v131.TextColor3 = p129
+        end
+        v131.Parent = v130
+        v_u_22.play(v131, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, true), {
+            ["Size"] = UDim2.new(1.4, 0, 0.35, 0)
+        })
+        v_u_1:AddItem(v131, 5)
+    end
+end
+local function v_u_139(p134) -- name: overPrompt
+    -- upvalues: (copy) v_u_24, (ref) v_u_63
+    local v135 = v_u_24:FindFirstChild("gameGui")
+    local v136 = v_u_63
+    local v137
+    if v135 == nil or (not v135:IsA("LayerCollector") or (v136 == nil or v135.DisplayOrder > v136.DisplayOrder)) then
+        v137 = nil
+    else
+        v137 = v135.DisplayOrder
+        v135.DisplayOrder = v136.DisplayOrder + 1
+    end
+    local v138 = p134()
+    if v135 ~= nil and (v135:IsA("LayerCollector") and v137 ~= nil) then
+        v135.DisplayOrder = v137
+    end
+    return v138
+end
+local function v_u_147(p140) -- name: ensureCloseHoverColors
+    local v141 = Color3.new(1, 1, 1)
+    local v142 = p140:FindFirstChild("buttonColor")
+    if v142 == nil or not v142:IsA("Color3Value") then
+        local v143 = Instance.new("Color3Value")
+        v143.Name = "buttonColor"
+        v143.Value = v141
+        v143.Parent = p140
+    else
+        v142.Value = v141
+    end
+    local v144 = Color3.new(1, 0, 0)
+    local v145 = p140:FindFirstChild("hoverButtonColor")
+    if v145 == nil or not v145:IsA("Color3Value") then
+        local v146 = Instance.new("Color3Value")
+        v146.Name = "hoverButtonColor"
+        v146.Value = v144
+        v146.Parent = p140
+    else
+        v145.Value = v144
+    end
+end
+local function v_u_154(p148, p_u_149) -- name: connectHover
+    -- upvalues: (copy) v_u_36
+    local v_u_150 = 0
+    local function v152() -- name: hoverIn
+        -- upvalues: (ref) v_u_150, (ref) v_u_36, (copy) p_u_149
+        local v151 = os.clock()
+        if v151 - v_u_150 >= 0.12 then
+            v_u_150 = v151
+            v_u_36:Play()
+        end
+        p_u_149(true)
+    end
+    local function v153() -- name: hoverOut
+        -- upvalues: (copy) p_u_149
+        p_u_149(false)
+    end
+    p148.MouseEnter:Connect(v152)
+    p148.SelectionGained:Connect(v152)
+    p148.MouseLeave:Connect(v153)
+    p148.SelectionLost:Connect(v153)
+end
+local function v_u_163(p155, p156, p157, p158, p159) -- name: cloneLabel
+    local v160 = p156:FindFirstChild(p157)
+    if v160 ~= nil and v160:IsA("TextLabel") then
+        return v160
+    end
+    local v161 = p155:Clone()
+    v161.Name = p157
+    for _, v162 in v161:GetChildren() do
+        if v162:IsA("UIStroke") then
+            continue
+        end
+        v162:Destroy()
+    end
+    v161.AnchorPoint = Vector2.new(0.5, 0.5)
+    v161.Position = p158
+    v161.Size = p159
+    v161.Text = ""
+    v161.TextColor3 = Color3.new(1, 1, 1)
+    v161.TextScaled = true
+    v161.TextWrapped = true
+    v161.TextXAlignment = Enum.TextXAlignment.Center
+    v161.Visible = true
+    v161.ZIndex = 2
+    v161.Parent = p156
+    return v161
+end
+local function v_u_177(p164, p165, p166, p167, p168, p169) -- name: createBalanceChip
+    -- upvalues: (copy) v_u_48, (copy) v_u_163
+    local v170 = Instance.new("Frame")
+    v170.Name = p166
+    v170.AnchorPoint = Vector2.new(0.5, 0.5)
+    v170.BackgroundTransparency = 1
+    v170.Position = p168
+    v170.Size = v_u_48.Size
+    v170.ZIndex = 2
+    local v171 = Instance.new("UIListLayout")
+    v171.FillDirection = Enum.FillDirection.Horizontal
+    v171.HorizontalAlignment = p169
+    v171.VerticalAlignment = Enum.VerticalAlignment.Center
+    v171.SortOrder = Enum.SortOrder.LayoutOrder
+    v171.Padding = UDim.new(v_u_48.Gap, 0)
+    v171.Parent = v170
+    local v172 = Instance.new("ImageLabel")
+    v172.Name = "icon"
+    v172.BackgroundTransparency = 1
+    local v173 = p169 == Enum.HorizontalAlignment.Right
+    v172.Image = p167
+    v172.LayoutOrder = v173 and 2 or 1
+    v172.ScaleType = Enum.ScaleType.Fit
+    v172.Size = v_u_48.IconSize
+    v172.ZIndex = 2
+    local v174 = Instance.new("UIAspectRatioConstraint")
+    v174.AspectRatio = 1
+    v174.DominantAxis = Enum.DominantAxis.Height
+    v174.Parent = v172
+    v172.Parent = v170
+    local v175 = v_u_163(p165, v170, "count", UDim2.fromScale(0, 0), v_u_48.LabelSize)
+    v175.LayoutOrder = v173 and 1 or 2
+    local v176
+    if v173 then
+        v176 = Enum.TextXAlignment.Right
+    else
+        v176 = Enum.TextXAlignment.Left
+    end
+    v175.TextXAlignment = v176
+    v170.Parent = p164
+    return v175
+end
+local function v_u_202(p178) -- name: stepAnimations
+    -- upvalues: (ref) v_u_107, (ref) v_u_76, (copy) v_u_77, (copy) v_u_105, (ref) v_u_102, (copy) v_u_103, (ref) v_u_69, (copy) v_u_104, (copy) v_u_74, (copy) v_u_60, (ref) v_u_73, (copy) v_u_106, (ref) v_u_93, (copy) v_u_62, (ref) v_u_100, (ref) v_u_91, (ref) v_u_92, (ref) v_u_79, (ref) v_u_108
+    v_u_107 = v_u_107 + p178
+    local v179 = v_u_107 * 3.2
+    local v180 = math.sin(v179)
+    local v181 = v_u_107 * 4.6
+    local v182 = math.sin(v181)
+    local v183 = v_u_76
+    if v183 ~= nil then
+        local v184 = v183.HoverSpring:Update(p178)
+        v183.PopScale.Scale = v183.PopSpring:Update(p178) + v184 * 0.014 * v182
+        v183.Root.Rotation = v183.TiltSpring:Update(p178) + v184 * (v180 * 0.7 + 2.4)
+        v183.Content.Position = v183.ContentHome - UDim2.fromScale(0, v184 * 0.02)
+    end
+    for _, v185 in v_u_77 do
+        v185.PopScale.Scale = v185.PopSpring:Update(p178)
+    end
+    local v186 = v_u_105:Update(p178)
+    local v187 = v_u_102
+    if v187 ~= nil then
+        v187.Scale = v_u_103:Update(p178) + v186 * 0.014 * v182
+    end
+    if v_u_69 == nil or v_u_69.ImageTransparency <= 0 then
+        if v_u_69 ~= nil then
+            v_u_69.Rotation = v_u_104:Update(p178) + v186 * 1.1 * v180
+        end
+    else
+        v_u_104:Reset(0)
+        v_u_69.Rotation = 0
+    end
+    for _, v188 in v_u_74 do
+        local v189 = v188.HoverSpring:Update(p178)
+        v188.PopScale.Scale = v188.PopSpring:Update(p178) + v189 * 0.014 * v182
+        if v188.Sunburst == nil then
+            continue
+        end
+        v188.Sunburst.Rotation = v_u_107 * v_u_60.SunburstDegreesPerSecond % 360
+    end
+    local v190 = v_u_73
+    if v190 ~= nil then
+        v190.Scale = v_u_106:Update(p178)
+    end
+    if v_u_93 then
+        v_u_62:StepSpin(p178)
+    elseif v_u_100 == nil and (#v_u_91 > 0 and #v_u_77 > 0) then
+        v_u_92 = v_u_92 + p178 * v_u_60.IdleCardsPerSecond
+        v_u_79()
+    end
+    local v191 = Color3.fromHSV(v_u_107 * v_u_60.RareHueSpeed % 1, v_u_60.RareSaturation, 1)
+    local v192 = v_u_107 * v_u_60.SunburstDegreesPerSecond % 360
+    local v193 = v_u_60.SunburstTransparency
+    local v194 = v_u_60.SunburstPulse
+    local v195 = v_u_107 * v_u_60.SunburstPulseSpeed
+    local v196 = v193 + v194 * math.sin(v195)
+    for _, v197 in v_u_77 do
+        if not v197.Rare then
+            continue
+        end
+        local v198 = v197.Panel
+        local v199 = Color3.new(0, 0, 0)
+        local v200
+        if v197.Landed then
+            v200 = v_u_60.LandedTintDarken
+        else
+            v200 = v_u_60.TintDarken
+        end
+        v198.BackgroundColor3 = v191:Lerp(v199, v200)
+        v197.NameLabel.TextColor3 = v191
+        if v197.PanelStroke ~= nil then
+            v197.PanelStroke.Color = v191
+        end
+        local v201 = v197.Sunburst
+        if v201 == nil then
+            continue
+        end
+        v201.ImageColor3 = v191
+        v201.ImageTransparency = v196
+        v201.Rotation = v192
+    end
+    v_u_108 = v_u_108 + p178
+    if v_u_108 >= 0.25 then
+        v_u_108 = 0
+        v_u_62:RefreshStatus()
+    end
+end
+local function v_u_209(p203) -- name: setAnimationsRunning
+    -- upvalues: (ref) v_u_109, (copy) v_u_5, (copy) v_u_202, (ref) v_u_93, (copy) v_u_62, (ref) v_u_76, (copy) v_u_77, (copy) v_u_103, (copy) v_u_104, (copy) v_u_105, (copy) v_u_106, (ref) v_u_102, (copy) v_u_74, (ref) v_u_73, (ref) v_u_69
+    if p203 then
+        if v_u_109 == nil then
+            v_u_109 = v_u_5.RenderStepped:Connect(v_u_202)
+        end
+    else
+        if v_u_109 ~= nil then
+            v_u_109:Disconnect()
+            v_u_109 = nil
+        end
+        if v_u_93 then
+            v_u_62:FinishSpin(false)
+        end
+        local v204 = v_u_76
+        if v204 ~= nil then
+            v204.PopSpring:Reset(1)
+            v204.PopScale.Scale = 1
+            v204.TiltSpring:Reset(0)
+            v204.Root.Rotation = 0
+            v204.HoverSpring:Reset(0)
+            v204.Content.Position = v204.ContentHome
+        end
+        for _, v205 in v_u_77 do
+            v205.PopSpring:Reset(1)
+            v205.PopScale.Scale = 1
+        end
+        v_u_103:Reset(1)
+        v_u_104:Reset(0)
+        v_u_105:Reset(0)
+        v_u_106:Reset(1)
+        local v206 = v_u_102
+        if v206 ~= nil then
+            v206.Scale = 1
+        end
+        for _, v207 in v_u_74 do
+            v207.PopSpring:Reset(1)
+            v207.HoverSpring:Reset(0)
+            v207.PopScale.Scale = 1
+        end
+        local v208 = v_u_73
+        if v208 ~= nil then
+            v208.Scale = 1
+        end
+        if v_u_69 ~= nil then
+            v_u_69.Rotation = 0
+        end
+    end
+end
+local function v_u_214() -- name: playOpenCascade
+    -- upvalues: (ref) v_u_109, (ref) v_u_76, (copy) v_u_77, (copy) v_u_103, (copy) v_u_74
+    if v_u_109 ~= nil then
+        local v210 = v_u_76
+        if v210 ~= nil then
+            v210.PopSpring:Impulse(3.2)
+            v210.TiltSpring:Impulse(110)
+        end
+        for v211, v_u_212 in v_u_77 do
+            if not v_u_212.Frame.Visible then
+                continue
+            end
+            task.delay(v211 * 0.045, function()
+                -- upvalues: (ref) v_u_109, (copy) v_u_212
+                if v_u_109 ~= nil then
+                    v_u_212.PopSpring:Impulse(3.2)
+                end
+            end)
+        end
+        v_u_103:Impulse(3.2)
+        for _, v213 in v_u_74 do
+            v213.PopSpring:Impulse(3.2)
+        end
+    end
+end
+local function v_u_243(p215, p216, p217, p218) -- name: renderCard
+    -- upvalues: (copy) v_u_40, (copy) v_u_14, (copy) v_u_60
+    for v219, v220 in p215.Icons do
+        local v221 = p216.Stats[v219]
+        local v222
+        if v221 == nil then
+            v222 = nil
+        else
+            local v223 = v_u_40:FindFirstChild(v_u_14.GetStatLabel(v221))
+            local v224
+            if v223 == nil then
+                v224 = nil
+            else
+                v224 = v223:FindFirstChild("image")
+            end
+            if v224 == nil or not v224:IsA("ImageLabel") then
+                v222 = nil
+            else
+                v222 = v224.Image
+            end
+        end
+        v220.Image = v222 or ""
+        v220.Visible = v222 ~= nil
+    end
+    local v225 = {
+        ["Key"] = p216.Key,
+        ["Tier"] = p217
+    }
+    local v226 = v_u_14.GetTierColor(p217)
+    local v227 = v_u_60.RareMinTier <= p217
+    local v228 = p215.NameLabel
+    local v229 = v_u_14.DescribeName(v225)
+    if v228 ~= nil then
+        v228.Text = v229
+        local v230 = v228:FindFirstChild("shadow")
+        if v230 ~= nil then
+            v230.Text = v229
+        end
+    end
+    local v231 = p215.StatLabel
+    local v232 = v_u_14.DescribeEffect(v225)
+    if v231 ~= nil then
+        v231.Text = v232
+        local v233 = v231:FindFirstChild("shadow")
+        if v233 ~= nil then
+            v233.Text = v232
+        end
+    end
+    p215.NameLabel.TextColor3 = v226
+    local v234 = p215.Panel.AbsoluteSize.Y
+    if v234 > 0 then
+        local v235 = p215.StatLabel
+        local v236 = v234 * v_u_60.StatTextScale
+        local v237 = math.round(v236)
+        v235.TextSize = math.max(10, v237)
+    end
+    local v238 = p215.PanelStroke
+    local v239 = p215.Panel
+    local v240 = Color3.new(0, 0, 0)
+    local v241
+    if p218 then
+        v241 = v_u_60.LandedTintDarken
+    else
+        v241 = v_u_60.TintDarken
+    end
+    v239.BackgroundColor3 = v226:Lerp(v240, v241)
+    if v238 ~= nil then
+        v238.Color = v226
+        local v242
+        if p218 then
+            v242 = v_u_60.LandedStrokeThickness
+        else
+            v242 = p215.PanelHomeStrokeThickness
+        end
+        v238.Thickness = v242
+    end
+    p215.Rare = v227
+    p215.Landed = p218
+    if p215.SunburstClip ~= nil then
+        p215.SunburstClip.Visible = v227
+    end
+end
+v_u_79 = function() -- name: layoutReel
+    -- upvalues: (ref) v_u_91, (copy) v_u_77, (ref) v_u_100, (ref) v_u_90, (copy) v_u_243, (copy) v_u_59, (copy) v_u_14, (ref) v_u_78, (ref) v_u_92, (ref) v_u_93, (ref) v_u_99, (ref) v_u_95, (ref) v_u_96
+    local v244 = #v_u_91
+    local v245 = #v_u_77
+    if v244 == 0 or v245 == 0 then
+        for _, v246 in v_u_77 do
+            v246.Frame.Visible = false
+        end
+        return
+    else
+        local v247 = v_u_100
+        if v_u_90 == "list" then
+            for v248, v249 in v_u_77 do
+                local v250 = v_u_91[v248]
+                if v250 == nil or v244 < v248 then
+                    v249.Frame.Visible = false
+                else
+                    local v251 = v_u_243
+                    local v252 = v_u_59[(v248 - 1) % #v_u_59 + 1]
+                    local v253 = v_u_14.TierCount
+                    v251(v249, v250, math.clamp(v252, 1, v253), false)
+                    local v254 = v248 - (v244 + 1) / 2
+                    v249.Frame.Position = UDim2.fromScale(v254 * v_u_78 + 0.5, v249.Frame.Position.Y.Scale)
+                    v249.Frame.Visible = true
+                end
+            end
+        else
+            local v255 = v245 // 2
+            local v256 = v_u_92
+            local v257 = math.round(v256)
+            local v258 = v_u_92 - v257
+            local v259
+            if v_u_93 and v_u_99 ~= nil then
+                local v260 = v_u_95 + v_u_96
+                v259 = math.round(v260)
+            else
+                v259 = nil
+            end
+            for v261, v262 in v_u_77 do
+                local v263 = v261 - v255 - 1
+                local v264 = v257 + v263
+                local v265 = v_u_91[(v264 - 1) % v244 + 1]
+                local v266 = v263 == 0 and not v_u_93
+                if v266 then
+                    if v247 == nil then
+                        v266 = false
+                    else
+                        v266 = v247.Key == v265.Key
+                    end
+                end
+                local v267
+                if v259 == nil then
+                    v267 = false
+                else
+                    v267 = v264 == v259
+                end
+                local v268 = v_u_59[(v264 - 1) % #v_u_59 + 1]
+                local v269 = v_u_14.TierCount
+                local v270 = math.clamp(v268, 1, v269)
+                if v266 and v247 ~= nil then
+                    v270 = v247.Tier
+                elseif v267 and v_u_99 ~= nil then
+                    v270 = v_u_99.Tier
+                end
+                v_u_243(v262, v265, v270, v266)
+                local v271 = v263 - v258
+                v262.Frame.Position = UDim2.fromScale(v271 * v_u_78 + 0.5, v262.Frame.Position.Y.Scale)
+                v262.Frame.Visible = true
+            end
+        end
+    end
+end
+local function v_u_275(p272) -- name: definitionsForKeys
+    -- upvalues: (copy) v_u_14
+    local v273 = {}
+    for _, v274 in v_u_14.GetAll() do
+        if table.find(p272, v274.Key) == nil then
+            continue
+        end
+        table.insert(v273, v274)
+    end
+    return v273
+end
+function v_u_62.RefreshStatus(_) -- name: RefreshStatus
+    -- upvalues: (ref) v_u_71, (ref) v_u_72, (copy) v_u_16, (ref) v_u_93, (copy) v_u_47, (copy) v_u_21
+    local v276 = v_u_71
+    local v277 = v_u_72
+    local v278 = ("Spins: %*"):format((v_u_16:GetSpins()))
+    if v277 ~= nil then
+        v277.Text = v278
+        local v279 = v277:FindFirstChild("shadow")
+        if v279 ~= nil then
+            v279.Text = v278
+        end
+    end
+    if v276 == nil then
+        return
+    elseif v_u_93 then
+        if v276 ~= nil then
+            v276.Text = "Enchanting..."
+            local v280 = v276:FindFirstChild("shadow")
+            if v280 ~= nil then
+                v280.Text = "Enchanting..."
+            end
+        end
+        v276.TextColor3 = v_u_47.TextColor
+        return
+    else
+        v276.TextColor3 = v_u_47.TextColor
+        local v281 = v_u_16:GetFreeSpinRemaining()
+        local v282 = v281 <= 0 and "Free spin ready!" or ("Free spin in %*"):format((v_u_21.clock(v281)))
+        if v276 ~= nil then
+            v276.Text = v282
+            local v283 = v276:FindFirstChild("shadow")
+            if v283 ~= nil then
+                v283.Text = v282
+            end
+        end
+    end
+end
+function v_u_62.ApplyButtonState(_) -- name: ApplyButtonState
+    -- upvalues: (ref) v_u_69, (copy) v_u_16, (ref) v_u_82, (ref) v_u_93, (ref) v_u_83, (ref) v_u_70, (ref) v_u_84, (ref) v_u_102, (copy) v_u_103, (copy) v_u_105, (ref) v_u_89, (ref) v_u_109, (ref) v_u_75, (copy) v_u_74, (copy) v_u_85, (ref) v_u_68
+    if v_u_69 ~= nil then
+        local v284 = v_u_16:GetSlotPet()
+        local v285 = not v_u_82
+        if v285 then
+            v285 = not v_u_93
+        end
+        if v_u_93 then
+            v_u_83 = "locked"
+            local v286 = v_u_70
+            if v286 ~= nil then
+                v286.Text = "Enchanting..."
+                local v287 = v286:FindFirstChild("shadow")
+                if v287 ~= nil then
+                    v287.Text = "Enchanting..."
+                end
+            end
+        elseif v284 == nil then
+            v_u_83 = "locked"
+            local v288 = v_u_70
+            if v288 ~= nil then
+                v288.Text = "Spin"
+                local v289 = v288:FindFirstChild("shadow")
+                if v289 ~= nil then
+                    v289.Text = "Spin"
+                end
+            end
+        elseif v_u_16:GetFreeSpinRemaining() <= 0 then
+            v_u_83 = "spin"
+            local v290 = v_u_70
+            if v290 ~= nil then
+                v290.Text = "FREE SPIN!"
+                local v291 = v290:FindFirstChild("shadow")
+                if v291 ~= nil then
+                    v291.Text = "FREE SPIN!"
+                end
+            end
+        elseif v_u_16:GetSpins() > 0 then
+            v_u_83 = "spin"
+            local v292 = v_u_70
+            local v293 = ("Spin (%*)"):format((v_u_16:GetSpins()))
+            if v292 ~= nil then
+                v292.Text = v293
+                local v294 = v292:FindFirstChild("shadow")
+                if v294 ~= nil then
+                    v294.Text = v293
+                end
+            end
+        else
+            v_u_83 = "noSpins"
+            local v295 = v_u_70
+            if v295 ~= nil then
+                v295.Text = "Spin (0)"
+                local v296 = v295:FindFirstChild("shadow")
+                if v296 ~= nil then
+                    v296.Text = "Spin (0)"
+                end
+            end
+        end
+        if v285 then
+            if v_u_83 == "locked" then
+                v285 = false
+            else
+                v285 = not v_u_84
+            end
+        end
+        local v297 = v_u_69
+        local v298 = v_u_102
+        v297.Active = v285
+        if v297:IsA("ImageButton") then
+            v297.ImageTransparency = v285 and 0 or 0.4
+        end
+        if not v285 and v298 ~= nil then
+            v298.Scale = 1
+        end
+        if not v285 then
+            v_u_103.Target = 1
+            v_u_105.Target = 0
+        end
+        if v285 and (not v_u_89 and v_u_109 ~= nil) then
+            v_u_103:Impulse(3.5)
+        end
+        v_u_89 = v285
+        local v299 = v_u_75
+        if v299 ~= nil then
+            if v_u_93 and (not v299.Button.Visible and v_u_109 ~= nil) then
+                v299.PopSpring:Impulse(3.5)
+            end
+            v299.Button.Visible = v_u_93
+            if not v_u_93 then
+                v299.PopSpring.Target = 1
+                v299.HoverSpring.Target = 0
+            end
+        end
+        for _, v300 in v_u_74 do
+            local v301 = v300.Pack
+            if v301 ~= nil then
+                local v302 = v_u_85[v301.Key]
+                local v303 = v301.Spins == 1 and "+1 Spin" or ("+%* Spins"):format(v301.Spins)
+                local v304 = v300.Label
+                if v302 ~= nil then
+                    v303 = ("%* %*"):format(v303, v302)
+                end
+                if v304 ~= nil then
+                    v304.Text = v303
+                    local v305 = v304:FindFirstChild("shadow")
+                    if v305 ~= nil then
+                        v305.Text = v303
+                    end
+                end
+            end
+            local v306 = not v_u_84
+            if v306 then
+                local v307 = v_u_93
+                if v307 then
+                    v307 = v301 ~= nil
+                end
+                v306 = not v307
+            end
+            local v308 = v300.Button
+            local v309 = v300.PopScale
+            v308.Active = v306
+            if v308:IsA("ImageButton") then
+                v308.ImageTransparency = v306 and 0 or 0.4
+            end
+            if not v306 and v309 ~= nil then
+                v309.Scale = 1
+            end
+            if v306 then
+                continue
+            end
+            v300.PopSpring.Target = 1
+            v300.HoverSpring.Target = 0
+        end
+        if v_u_68 ~= nil then
+            v_u_68.Active = not v_u_93
+        end
+    end
+end
+function v_u_62.RefreshSlot(_) -- name: RefreshSlot
+    -- upvalues: (ref) v_u_76, (copy) v_u_16, (copy) v_u_43, (copy) v_u_119, (copy) v_u_19, (ref) v_u_93, (copy) v_u_14, (copy) v_u_42, (ref) v_u_88, (ref) v_u_109
+    local v310 = v_u_76
+    if v310 ~= nil then
+        local v311 = v_u_16:GetSlotPet()
+        if v311 == nil then
+            v310.Icon.Image = "rbxassetid://78402709216221"
+            v310.Icon.Size = v_u_42
+            v310.NameLabel.Text = "Add Pet"
+            v310.NameLabel.TextColor3 = Color3.new(1, 1, 1)
+            v_u_19.Apply(v310.NameLabel, nil)
+            v310.EnchantLabel.Visible = false
+        else
+            v310.Icon.Image = v311.Value
+            v310.Icon.Size = v_u_43
+            v310.NameLabel.Text = ("%*%*"):format(v311.Name, v311:FindFirstChild("evolved") == nil and "" or " (Evolved)")
+            local v312 = v310.NameLabel
+            local v313 = v_u_119
+            local v314
+            if v311.Parent == nil then
+                v314 = nil
+            else
+                v314 = v311.Parent.Name
+            end
+            v312.TextColor3 = v313(v314)
+            local v315 = v_u_19.Apply
+            local v316 = v310.NameLabel
+            local v317
+            if v311.Parent == nil then
+                v317 = nil
+            else
+                v317 = v311.Parent.Name
+            end
+            v315(v316, v317)
+            local v318
+            if v_u_93 then
+                v318 = nil
+            else
+                v318 = v_u_14.Read(v311)
+            end
+            if v318 == nil then
+                v310.EnchantLabel.Visible = false
+            else
+                local v319 = v310.EnchantLabel
+                local v320 = v_u_14.DescribeName(v318)
+                if v319 ~= nil then
+                    v319.Text = v320
+                    local v321 = v319:FindFirstChild("shadow")
+                    if v321 ~= nil then
+                        v321.Text = v320
+                    end
+                end
+                v310.EnchantLabel.TextColor3 = v_u_14.GetTierColor(v318.Tier)
+                v310.EnchantLabel.Visible = true
+            end
+        end
+        local v322 = v311 ~= nil
+        if v322 ~= v_u_88 and v_u_109 ~= nil then
+            v310.PopSpring:Impulse(v322 and 4 or -2.5)
+            v310.TiltSpring:Impulse(v322 and 120 or -90)
+        end
+        v_u_88 = v322
+    end
+end
+function v_u_62.RefreshReel(_) -- name: RefreshReel
+    -- upvalues: (ref) v_u_93, (copy) v_u_16, (ref) v_u_100, (ref) v_u_101, (copy) v_u_14, (ref) v_u_91, (ref) v_u_90, (ref) v_u_80, (ref) v_u_92, (ref) v_u_79
+    if not v_u_93 then
+        local v323 = v_u_16:GetSlotPet()
+        if v_u_100 ~= nil and v_u_101 ~= v323 then
+            v_u_100 = nil
+            v_u_101 = nil
+        end
+        if v_u_100 == nil then
+            local v324
+            if v323 == nil then
+                v324 = v_u_14.GetAll()
+            else
+                v324 = v_u_14.GetEligible(v323)
+            end
+            local v325 = ""
+            for _, v326 in v324 do
+                v325 = v325 .. ("%*,"):format(v326.Key)
+            end
+            v_u_91 = v324
+            v_u_90 = "reel"
+            if v325 ~= v_u_80 then
+                v_u_80 = v325
+                v_u_92 = (#v324 + 1) / 2
+            end
+        end
+        v_u_79()
+    end
+end
+function v_u_62.Redraw(_) -- name: Redraw
+    -- upvalues: (ref) v_u_81, (copy) v_u_62
+    if v_u_81 then
+        v_u_62:RefreshSlot()
+        v_u_62:RefreshReel()
+        v_u_62:ApplyButtonState()
+        v_u_62:RefreshStatus()
+    end
+end
+function v_u_62.ShowRejection(_, p327) -- name: ShowRejection
+    -- upvalues: (copy) v_u_33, (copy) v_u_133, (copy) v_u_16, (ref) v_u_109, (copy) v_u_103, (copy) v_u_104
+    v_u_33:Play()
+    v_u_133(v_u_16:DescribeReason(p327) or "")
+    if v_u_109 ~= nil then
+        v_u_103:Impulse(-3)
+        v_u_104:Impulse(150)
+        task.delay(0.07, function()
+            -- upvalues: (ref) v_u_109, (ref) v_u_104
+            if v_u_109 ~= nil then
+                v_u_104:Impulse(-255)
+            end
+        end)
+        task.delay(0.14, function()
+            -- upvalues: (ref) v_u_109, (ref) v_u_104
+            if v_u_109 ~= nil then
+                v_u_104:Impulse(135)
+            end
+        end)
+    end
+end
+function v_u_62.StartSpin(_, p328) -- name: StartSpin
+    -- upvalues: (copy) v_u_16, (copy) v_u_275, (copy) v_u_14, (ref) v_u_91, (ref) v_u_90, (ref) v_u_92, (ref) v_u_100, (ref) v_u_101, (ref) v_u_99, (ref) v_u_95, (ref) v_u_96, (ref) v_u_94, (ref) v_u_97, (ref) v_u_98, (ref) v_u_93, (copy) v_u_62, (ref) v_u_79
+    local v329 = v_u_16:GetSlotPet()
+    local v330 = v_u_275(p328.Pool)
+    if #v330 == 0 and v329 ~= nil then
+        v330 = v_u_14.GetEligible(v329)
+    end
+    if #v330 == 0 then
+        v330 = v_u_14.GetAll()
+    end
+    v_u_91 = v330
+    local v331 = #v_u_91
+    if v_u_90 ~= "reel" then
+        v_u_90 = "reel"
+        v_u_92 = (v331 + 1) / 2
+    end
+    local v332 = p328.Key
+    for v335, v334 in v_u_91 do
+        if v334.Key ~= v332 then
+            continue
+        end
+    end
+    local v335 = nil
+    local v336 = v335 or 1
+    local v337 = v_u_92 + 84
+    if v336 < v337 then
+        local v338 = (v337 - v336) / v331
+        v336 = v336 + math.ceil(v338) * v331
+    end
+    v_u_100 = nil
+    v_u_101 = v329
+    v_u_99 = p328
+    v_u_95 = v_u_92
+    v_u_96 = v336 - v_u_92
+    v_u_94 = 0
+    local v339 = v_u_92
+    v_u_97 = math.round(v339)
+    v_u_98 = 0
+    v_u_93 = true
+    v_u_62:RefreshSlot()
+    v_u_62:ApplyButtonState()
+    v_u_62:RefreshStatus()
+    v_u_79()
+end
+function v_u_62.StepSpin(_, p340) -- name: StepSpin
+    -- upvalues: (ref) v_u_94, (ref) v_u_92, (ref) v_u_95, (ref) v_u_96, (copy) v_u_116, (ref) v_u_97, (ref) v_u_98, (copy) v_u_60, (copy) v_u_38, (copy) v_u_106, (ref) v_u_79, (copy) v_u_62
+    v_u_94 = v_u_94 + p340
+    local v341 = v_u_94 / 6.5
+    local v342 = math.clamp(v341, 0, 1)
+    v_u_92 = v_u_95 + v_u_96 * v_u_116(v342)
+    local v343 = v_u_92
+    local v344 = math.round(v343)
+    if v344 ~= v_u_97 then
+        v_u_97 = v344
+        if v_u_94 - v_u_98 >= v_u_60.TickInterval then
+            v_u_98 = v_u_94
+            v_u_38:Play()
+        end
+        v_u_106:Impulse(2.4)
+    end
+    v_u_79()
+    if v342 >= 1 then
+        v_u_62:FinishSpin(true)
+    end
+end
+function v_u_62.FinishSpin(_, p345) -- name: FinishSpin
+    -- upvalues: (ref) v_u_99, (ref) v_u_93, (ref) v_u_92, (ref) v_u_95, (ref) v_u_96, (ref) v_u_100, (ref) v_u_79, (copy) v_u_16, (copy) v_u_77, (ref) v_u_109, (copy) v_u_14, (copy) v_u_34, (copy) v_u_37, (copy) v_u_133, (copy) v_u_62
+    local v346 = v_u_99
+    v_u_93 = false
+    v_u_99 = nil
+    v_u_92 = v_u_95 + v_u_96
+    if v346 ~= nil then
+        v_u_100 = {
+            ["Key"] = v346.Key,
+            ["Tier"] = v346.Tier
+        }
+    end
+    v_u_79()
+    local v347 = v_u_100
+    local v348 = v_u_16:GetSlotPet()
+    if p345 and v347 ~= nil then
+        local v349 = v_u_77[#v_u_77 // 2 + 1]
+        if v349 ~= nil and v_u_109 ~= nil then
+            v349.PopSpring:Impulse(4)
+            for v350, v_u_351 in v_u_77 do
+                if v_u_351 == v349 then
+                    continue
+                end
+                local v352 = task.delay
+                local v353 = v350 - (#v_u_77 // 2 + 1)
+                v352(math.abs(v353) * 0.04, function()
+                    -- upvalues: (ref) v_u_109, (copy) v_u_351
+                    if v_u_109 ~= nil then
+                        v_u_351.PopSpring:Impulse(1.6)
+                    end
+                end)
+            end
+        end
+        if v347.Tier >= v_u_14.TierCount - 1 then
+            v_u_34:Play()
+        end
+        v_u_37:Play()
+        v_u_133(("%* was enchanted with %* (%*)!"):format(v348 == nil and "Your pet" or v348.Name, v_u_14.DescribeName(v347), (v_u_14.DescribeEffect(v347))), v_u_14.GetTierColor(v347.Tier))
+    end
+    v_u_62:Redraw()
+end
+function v_u_62.SkipSpin(_) -- name: SkipSpin
+    -- upvalues: (ref) v_u_93, (copy) v_u_32, (copy) v_u_62
+    if v_u_93 then
+        v_u_32:Play()
+        v_u_62:FinishSpin(true)
+    end
+end
+local function v_u_358(p_u_354, p_u_355) -- name: confirmRespin
+    -- upvalues: (copy) v_u_139, (copy) v_u_7, (copy) v_u_14, (copy) v_u_16
+    local v356 = v_u_139(function()
+        -- upvalues: (ref) v_u_7, (copy) p_u_354, (ref) v_u_14, (copy) p_u_355
+        return v_u_7.Ask({
+            ["Title"] = "WARNING",
+            ["Question"] = nil,
+            ["Question"] = ("%* has %*. Spinning will replace it. Spin anyway?"):format(p_u_354.Name, (v_u_14.DescribeName(p_u_355)))
+        })
+    end)
+    local v357 = v_u_14.Read(p_u_354)
+    if v356 then
+        if v_u_16:GetSlotPet() == p_u_354 and (v357 ~= nil and v357.Key == p_u_355.Key) then
+            v356 = v357.Tier == p_u_355.Tier
+        else
+            v356 = false
+        end
+    end
+    return v356
+end
+function v_u_62.DoSpin(_) -- name: DoSpin
+    -- upvalues: (ref) v_u_82, (copy) v_u_62, (copy) v_u_16, (copy) v_u_32
+    v_u_82 = true
+    v_u_62:ApplyButtonState()
+    local v359 = v_u_16:Spin()
+    v_u_82 = false
+    local v360 = v359.Result
+    if v359.Ok and v360 ~= nil then
+        v_u_32:Play()
+        v_u_62:StartSpin(v360)
+    else
+        v_u_62:ShowRejection(v359.Reason)
+        v_u_62:Redraw()
+    end
+end
+function v_u_62.HandleSpinButton(_) -- name: HandleSpinButton
+    -- upvalues: (ref) v_u_82, (ref) v_u_93, (ref) v_u_84, (ref) v_u_81, (ref) v_u_65, (ref) v_u_109, (copy) v_u_103, (copy) v_u_16, (ref) v_u_83, (copy) v_u_62, (copy) v_u_14, (copy) v_u_15, (copy) v_u_358, (ref) v_u_64
+    if not v_u_82 and (not v_u_93 and (not v_u_84 and v_u_81)) then
+        local v361
+        if v_u_65 == nil then
+            v361 = false
+        else
+            v361 = v_u_65.Visible == true
+        end
+        if not v361 then
+            if v_u_109 ~= nil then
+                v_u_103:Impulse(-4.5)
+            end
+            local v_u_362 = v_u_16:GetSlotPet()
+            if v_u_83 == "spin" and v_u_362 ~= nil then
+                local v_u_363 = v_u_14.Read(v_u_362)
+                if v_u_363 == nil or v_u_363.Tier < v_u_15.RESPIN_WARNING_TIER then
+                    v_u_62:DoSpin()
+                else
+                    v_u_84 = true
+                    v_u_62:ApplyButtonState()
+                    task.spawn(function()
+                        -- upvalues: (ref) v_u_358, (copy) v_u_362, (copy) v_u_363, (ref) v_u_84, (ref) v_u_82, (ref) v_u_93, (ref) v_u_64, (ref) v_u_62
+                        local v364 = v_u_358(v_u_362, v_u_363)
+                        v_u_84 = false
+                        if v364 and (not v_u_82 and (not v_u_93 and v_u_64.Visible)) then
+                            v_u_62:DoSpin()
+                        else
+                            v_u_62:ApplyButtonState()
+                        end
+                    end)
+                end
+            else
+                v_u_62:ShowRejection(v_u_362 == nil and "empty" or "noSpins")
+                return
+            end
+        end
+    end
+end
+function v_u_62.HandleSideButton(_, p365) -- name: HandleSideButton
+    -- upvalues: (ref) v_u_84, (ref) v_u_81, (ref) v_u_65, (ref) v_u_75, (copy) v_u_62, (copy) v_u_32, (copy) v_u_20, (ref) v_u_93, (ref) v_u_109, (copy) v_u_33, (copy) v_u_133, (copy) v_u_2, (copy) v_u_23
+    if not v_u_84 and v_u_81 then
+        local v366
+        if v_u_65 == nil then
+            v366 = false
+        else
+            v366 = v_u_65.Visible == true
+        end
+        if not v366 then
+            if p365 == v_u_75 then
+                v_u_62:SkipSpin()
+                return
+            else
+                local v367 = p365.Pack
+                if v367 == nil then
+                    v_u_32:Play()
+                    v_u_20:ShowTab("enchant")
+                    return
+                elseif v_u_93 then
+                    return
+                else
+                    if v_u_109 ~= nil then
+                        p365.PopSpring:Impulse(-4.5)
+                    end
+                    if v367.ProductId <= 0 then
+                        v_u_33:Play()
+                        v_u_133("Spin packs are coming soon.")
+                    else
+                        v_u_32:Play()
+                        v_u_2:PromptProductPurchase(v_u_23, v367.ProductId)
+                    end
+                end
+            end
+        end
+    end
+end
+function v_u_62.ShowOdds(_) -- name: ShowOdds
+    -- upvalues: (ref) v_u_65, (ref) v_u_93, (ref) v_u_82, (copy) v_u_32, (ref) v_u_87, (copy) v_u_11
+    if v_u_65 ~= nil and not (v_u_93 or v_u_82) then
+        v_u_32:Play()
+        v_u_87 = true
+        v_u_11:ShowMenu(v_u_65)
+    end
+end
+function v_u_62.HideOdds(_) -- name: HideOdds
+    -- upvalues: (ref) v_u_65, (copy) v_u_32, (ref) v_u_87, (copy) v_u_62, (copy) v_u_11
+    if v_u_65 == nil or not v_u_65.Visible then
+        return
+    else
+        v_u_32:Play()
+        if v_u_87 and v_u_62:IsNearMachine() then
+            v_u_87 = false
+            v_u_62:ShowEnchantMenu()
+        else
+            v_u_11:ResetMenus()
+        end
+    end
+end
+function v_u_62.IsNearMachine(_) -- name: IsNearMachine
+    -- upvalues: (copy) v_u_17
+    return v_u_17:IsPlayerNear()
+end
+function v_u_62.Open(_) -- name: Open
+    -- upvalues: (ref) v_u_81, (copy) v_u_14, (copy) v_u_62, (copy) v_u_11, (ref) v_u_64
+    if v_u_81 then
+        if v_u_14.IsEnabled() then
+            v_u_11:ResetMenus(v_u_64)
+            v_u_62:Redraw()
+        else
+            v_u_62:ShowRejection("disabled")
+        end
+    else
+        return
+    end
+end
+function v_u_62.ShowEnchantMenu(_) -- name: ShowEnchantMenu
+    -- upvalues: (ref) v_u_81, (copy) v_u_14, (copy) v_u_11, (ref) v_u_64, (copy) v_u_62
+    if v_u_81 and v_u_14.IsEnabled() then
+        v_u_11:ShowMenu(v_u_64)
+        v_u_62:Redraw()
+    end
+end
+function v_u_62.HandlePickedPet(_, p368) -- name: HandlePickedPet
+    -- upvalues: (copy) v_u_16, (copy) v_u_33, (copy) v_u_133, (copy) v_u_32, (ref) v_u_86, (copy) v_u_13, (copy) v_u_26, (copy) v_u_62
+    local v369, v370 = v_u_16:DescribePet(p368)
+    if v369 then
+        v_u_32:Play()
+        v_u_16:SetSlot(p368)
+        v_u_86 = true
+        v_u_13:EndPetSelection()
+        v_u_26.Visible = false
+        v_u_62:ShowEnchantMenu()
+    else
+        v_u_33:Play()
+        v_u_133(v_u_16:DescribeReason(v370) or "")
+    end
+end
+function v_u_62.HandlePickerEnded(_) -- name: HandlePickerEnded
+    -- upvalues: (ref) v_u_86, (copy) v_u_11, (copy) v_u_62, (copy) v_u_16
+    if v_u_86 then
+        v_u_86 = false
+        return
+    elseif v_u_11:IsAnyMenuOpen() or not v_u_62:IsNearMachine() then
+        v_u_16:ClearSlot()
+    else
+        v_u_62:ShowEnchantMenu()
+    end
+end
+function v_u_62.OpenPetPicker(_) -- name: OpenPetPicker
+    -- upvalues: (copy) v_u_13, (copy) v_u_32, (ref) v_u_86, (copy) v_u_62, (copy) v_u_11, (copy) v_u_26
+    if not v_u_13:IsPetSelectionActive() then
+        v_u_32:Play()
+        v_u_86 = false
+        v_u_13:BeginPetSelection(function(p371)
+            -- upvalues: (ref) v_u_62
+            v_u_62:HandlePickedPet(p371)
+        end, function()
+            -- upvalues: (ref) v_u_62
+            v_u_62:HandlePickerEnded()
+        end)
+        v_u_11:ShowMenu(v_u_26)
+    end
+end
+function v_u_62.HandleSlotActivated(_) -- name: HandleSlotActivated
+    -- upvalues: (ref) v_u_82, (ref) v_u_93, (ref) v_u_81, (ref) v_u_65, (copy) v_u_16, (copy) v_u_32, (copy) v_u_62
+    if not v_u_82 and (not v_u_93 and v_u_81) then
+        local v372
+        if v_u_65 == nil then
+            v372 = false
+        else
+            v372 = v_u_65.Visible == true
+        end
+        if not v372 then
+            if v_u_16:GetSlotPet() == nil then
+                v_u_62:OpenPetPicker()
+            else
+                v_u_32:Play()
+                v_u_16:ClearSlot()
+            end
+        end
+    end
+end
+local function v_u_383(p373) -- name: bindSlot
+    -- upvalues: (copy) v_u_163, (copy) v_u_44, (copy) v_u_45, (ref) v_u_76, (copy) v_u_6
+    local v374 = p373:FindFirstChild("Slot")
+    local v375
+    if v374 == nil then
+        v375 = nil
+    else
+        v375 = v374:FindFirstChild("Base")
+    end
+    local v376
+    if v374 == nil then
+        v376 = nil
+    else
+        v376 = v374:FindFirstChild("Content")
+    end
+    local v377
+    if v376 == nil then
+        v377 = nil
+    else
+        v377 = v376:FindFirstChild("PetSlot")
+    end
+    local v378
+    if v377 == nil then
+        v378 = nil
+    else
+        v378 = v377:FindFirstChild("PH")
+    end
+    local v379
+    if v376 == nil then
+        v379 = nil
+    else
+        v379 = v376:FindFirstChild("AddText")
+    end
+    if v374 == nil or (not v374:IsA("Frame") or (v375 == nil or (not v375:IsA("ImageButton") or (v376 == nil or (not v376:IsA("GuiObject") or (v378 == nil or (not v378:IsA("ImageLabel") or (v379 == nil or not v379:IsA("TextLabel"))))))))) then
+        return false
+    end
+    v375.Active = true
+    v375:SetAttribute("ControllerOwnsHover", true)
+    if v377 == nil or not v377:IsA("ImageButton") then
+        v377 = nil
+    end
+    if v377 ~= nil then
+        v377.Active = true
+        v377:SetAttribute("ControllerOwnsHover", true)
+    end
+    local v380 = v_u_163(v379, v376, "enchantLabel", v_u_44, v_u_45)
+    v380.Visible = false
+    local v381 = {
+        ["Root"] = v374,
+        ["Button"] = v375,
+        ["Well"] = v377,
+        ["Icon"] = v378,
+        ["NameLabel"] = v379,
+        ["EnchantLabel"] = v380,
+        ["Content"] = v376,
+        ["ContentHome"] = v376.Position
+    }
+    local v382 = v376:FindFirstChild("popScale")
+    if v382 == nil or not v382:IsA("UIScale") then
+        v382 = Instance.new("UIScale")
+        v382.Name = "popScale"
+        v382.Parent = v376
+    end
+    v381.PopScale = v382
+    v381.PopSpring = v_u_6.new(1, 0.11)
+    v381.TiltSpring = v_u_6.new(0, 0.09)
+    v381.HoverSpring = v_u_6.new(0, 0.16)
+    v_u_76 = v381
+    return true
+end
+local function v_u_394(p384) -- name: createStatIcons
+    -- upvalues: (copy) v_u_52, (copy) v_u_53
+    local v385 = {}
+    local v386 = p384:FindFirstChild("statIcons")
+    if v386 == nil then
+        v386 = Instance.new("Frame")
+        v386.Name = "statIcons"
+        v386.AnchorPoint = Vector2.new(0.5, 0.5)
+        v386.BackgroundTransparency = 1
+        v386.Position = v_u_52
+        v386.Size = v_u_53
+        v386.ZIndex = 2
+        local v387 = Instance.new("UIListLayout")
+        v387.FillDirection = Enum.FillDirection.Horizontal
+        v387.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        v387.VerticalAlignment = Enum.VerticalAlignment.Center
+        v387.SortOrder = Enum.SortOrder.LayoutOrder
+        v387.Padding = UDim.new(0.06, 0)
+        v387.Parent = v386
+        for v388 = 1, 2 do
+            local v389 = Instance.new("ImageLabel")
+            v389.Name = ("statIcon%*"):format(v388)
+            v389.BackgroundTransparency = 1
+            v389.LayoutOrder = v388
+            v389.ScaleType = Enum.ScaleType.Fit
+            v389.Size = UDim2.fromScale(1, 1)
+            v389.Visible = false
+            v389.ZIndex = 2
+            local v390 = Instance.new("UIAspectRatioConstraint")
+            v390.AspectRatio = 1
+            v390.DominantAxis = Enum.DominantAxis.Height
+            v390.Parent = v389
+            v389.Parent = v386
+        end
+        v386.Parent = p384
+    end
+    for _, v391 in v386:GetChildren() do
+        if not v391:IsA("ImageLabel") then
+            continue
+        end
+        table.insert(v385, v391)
+    end
+    table.sort(v385, function(p392, p393)
+        return p392.LayoutOrder < p393.LayoutOrder
+    end)
+    return v385
+end
+local function v_u_417(p395) -- name: bindReel
+    -- upvalues: (ref) v_u_78, (copy) v_u_49, (copy) v_u_50, (copy) v_u_51, (copy) v_u_57, (copy) v_u_58, (copy) v_u_163, (copy) v_u_54, (copy) v_u_55, (copy) v_u_56, (copy) v_u_60, (copy) v_u_77, (copy) v_u_394, (copy) v_u_6
+    local v396 = {}
+    for _, v397 in p395:GetChildren() do
+        if not v397:IsA("Frame") then
+            continue
+        end
+        table.insert(v396, v397)
+    end
+    local v398 = p395:FindFirstChildOfClass("UIListLayout")
+    local v399 = v398 == nil and 0 or v398.Padding.Scale
+    local v400 = v396[1]
+    v_u_78 = v400 == nil and 0 or v400.Size.X.Scale + v399
+    if v398 ~= nil then
+        v398:Destroy()
+    end
+    for v401, v402 in v396 do
+        local v403 = v402:FindFirstChild("Content")
+        local v404 = v402:FindFirstChild("Slot")
+        local v405
+        if v403 == nil then
+            v405 = nil
+        else
+            v405 = v403:FindFirstChild("PetName")
+        end
+        local v406
+        if v403 == nil then
+            v406 = nil
+        else
+            v406 = v403:FindFirstChild("Amnt")
+        end
+        if v403 == nil or (v404 == nil or (not v404:IsA("Frame") or (v405 == nil or (not v405:IsA("TextLabel") or (v406 == nil or not v406:IsA("TextLabel")))))) then
+            continue
+        end
+        v402.AnchorPoint = Vector2.new(0.5, 0.5)
+        v402.LayoutOrder = v401
+        v404.AnchorPoint = v_u_49
+        v404.Position = v_u_50
+        v404.Size = v_u_51
+        v405.Position = v_u_57
+        v405.Size = v_u_58
+        v406.Visible = false
+        local v407 = v404:FindFirstChildOfClass("UIStroke")
+        local v408 = v_u_163(v406, v404, "statLabel", v_u_54, v_u_55)
+        v408.TextColor3 = v_u_56
+        v408.TextScaled = false
+        v408.TextWrapped = true
+        v408.TextYAlignment = Enum.TextYAlignment.Center
+        local v409 = Instance.new("Frame")
+        v409.Name = "sunburst"
+        v409.AnchorPoint = Vector2.new(0.5, 0.5)
+        v409.BackgroundTransparency = 1
+        v409.BorderSizePixel = 0
+        v409.ClipsDescendants = true
+        v409.Position = v_u_60.SunburstPosition
+        v409.Size = v_u_60.SunburstSize
+        v409.Visible = false
+        v409.ZIndex = 0
+        local v410 = Instance.new("UIAspectRatioConstraint")
+        v410.AspectRatio = 1
+        v410.DominantAxis = Enum.DominantAxis.Width
+        v410.Parent = v409
+        local v411 = Instance.new("UICorner")
+        v411.CornerRadius = UDim.new(0.5, 0)
+        v411.Parent = v409
+        local v412 = Instance.new("ImageLabel")
+        v412.Name = "rays"
+        v412.AnchorPoint = Vector2.new(0.5, 0.5)
+        v412.BackgroundTransparency = 1
+        v412.Image = v_u_60.SunburstImage
+        v412.ImageTransparency = v_u_60.SunburstTransparency
+        v412.Position = UDim2.fromScale(0.5, 0.5)
+        v412.ScaleType = Enum.ScaleType.Fit
+        v412.Size = UDim2.fromScale(1, 1)
+        v412.ZIndex = 0
+        v412.Parent = v409
+        v409.Parent = v402
+        local v413 = v_u_77
+        local v414 = {
+            ["Frame"] = nil,
+            ["Panel"] = nil,
+            ["PanelStroke"] = nil,
+            ["PanelHomeColor"] = nil,
+            ["PanelHomeStrokeColor"] = nil,
+            ["PanelHomeStrokeThickness"] = nil,
+            ["NameLabel"] = nil,
+            ["StatLabel"] = nil,
+            ["Icons"] = nil,
+            ["Sunburst"] = nil,
+            ["SunburstClip"] = nil,
+            ["Rare"] = false,
+            ["Landed"] = false,
+            ["PopScale"] = nil,
+            ["PopSpring"] = nil,
+            ["Frame"] = v402,
+            ["Panel"] = v404,
+            ["PanelStroke"] = v407,
+            ["PanelHomeColor"] = v404.BackgroundColor3
+        }
+        local v415
+        if v407 == nil then
+            v415 = Color3.new(0, 0, 0)
+        else
+            v415 = v407.Color
+        end
+        v414.PanelHomeStrokeColor = v415
+        v414.PanelHomeStrokeThickness = v407 == nil and 0 or v407.Thickness
+        v414.NameLabel = v405
+        v414.StatLabel = v408
+        v414.Icons = v_u_394(v404)
+        v414.Sunburst = v412
+        v414.SunburstClip = v409
+        local v416 = v402:FindFirstChild("popScale")
+        if v416 == nil or not v416:IsA("UIScale") then
+            v416 = Instance.new("UIScale")
+            v416.Name = "popScale"
+            v416.Parent = v402
+        end
+        v414.PopScale = v416
+        v414.PopSpring = v_u_6.new(1, 0.13)
+        table.insert(v413, v414)
+    end
+end
+local function v_u_433(p418, p419) -- name: hoistButtonIcon
+    -- upvalues: (copy) v_u_46
+    if p419:IsA("TextLabel") then
+        local v420 = p419:FindFirstChildWhichIsA("ImageLabel")
+        if v420 == nil then
+            return
+        else
+            local v421 = p419.Position.X.Scale - p419.Size.X.Scale * p419.AnchorPoint.X
+            local v422 = p419.Position.Y.Scale - p419.Size.Y.Scale * p419.AnchorPoint.Y
+            local v423 = v421 + p419.Size.X.Scale
+            local v424 = v421 + (v420.Position.X.Scale - v420.Size.X.Scale * v420.AnchorPoint.X) * p419.Size.X.Scale
+            local v425 = v422 + (v420.Position.Y.Scale - v420.Size.Y.Scale * v420.AnchorPoint.Y) * p419.Size.Y.Scale
+            local v426 = v420.Size.X.Scale * p419.Size.X.Scale
+            local v427 = v420.Size.Y.Scale * p419.Size.Y.Scale
+            v420.AnchorPoint = Vector2.new(0, 0)
+            v420.Position = UDim2.fromScale(v424, v425)
+            v420.Size = UDim2.fromScale(v426, v427)
+            v420.ZIndex = p419.ZIndex
+            v420.Parent = p418
+            local v428 = p418.AbsoluteSize
+            if v428.X > 0 and (v428.Y > 0 and v420:FindFirstChildOfClass("UIAspectRatioConstraint") == nil) then
+                local v429 = Instance.new("UIAspectRatioConstraint")
+                v429.AspectRatio = v426 * v428.X / (v427 * v428.Y)
+                v429.DominantAxis = Enum.DominantAxis.Height
+                v429.Parent = v420
+            end
+            local v430 = v424 + v426
+            if v430 > v421 and v423 > v430 then
+                local v431 = v430 + v_u_46.IconGap
+                local v432 = v423 - v431
+                p419.Position = UDim2.fromScale(v431 + v432 * p419.AnchorPoint.X, p419.Position.Y.Scale)
+                p419.Size = UDim2.fromScale(v432, p419.Size.Y.Scale)
+            end
+        end
+    else
+        return
+    end
+end
+local function v_u_451() -- name: bindOdds
+    -- upvalues: (ref) v_u_65, (ref) v_u_67, (copy) v_u_15, (copy) v_u_147
+    local v434 = v_u_65
+    if v434 == nil then
+        return false
+    end
+    v_u_67 = v434:FindFirstChild("CloseBTN")
+    local v435 = v434:FindFirstChild("Content")
+    local v436
+    if v435 == nil then
+        v436 = nil
+    else
+        v436 = v435:FindFirstChild("ScrollingFrame")
+    end
+    if v436 == nil or (v_u_67 == nil or not v_u_67:IsA("GuiButton")) then
+        return false
+    end
+    if v436:IsA("ScrollingFrame") then
+        v436.ScrollingEnabled = false
+    end
+    if v434:IsA("GuiObject") then
+        v434.Active = true
+    end
+    for v437, v438 in v_u_15.TIERS do
+        local v439 = v436:FindFirstChild((tostring(v437)))
+        local v440
+        if v439 == nil then
+            v440 = nil
+        else
+            v440 = v439:FindFirstChild("DropChance")
+        end
+        local v441
+        if v440 == nil then
+            v441 = nil
+        else
+            v441 = v440:FindFirstChild("Chance")
+        end
+        local v442
+        if v439 == nil then
+            v442 = nil
+        else
+            v442 = v439:FindFirstChild("Tier")
+        end
+        local v443
+        if v439 == nil then
+            v443 = nil
+        else
+            v443 = v439:FindFirstChild("TierLevel")
+        end
+        if v439 == nil then
+            continue
+        end
+        if v441 ~= nil and v441:IsA("TextLabel") then
+            local v444 = v438.Chance
+            local v445
+            if v444 == math.floor(v444) then
+                v445 = ("%*%%"):format(v444)
+            else
+                v445 = ("%*%%"):format((string.format("%.2f", v444):gsub("0+$", "")))
+            end
+            if v441 ~= nil then
+                v441.Text = v445
+                local v446 = v441:FindFirstChild("shadow")
+                if v446 ~= nil then
+                    v446.Text = v445
+                end
+            end
+        end
+        if v442 ~= nil and v442:IsA("TextLabel") then
+            local v447 = ("Tier %*"):format(v438.Tier)
+            if v442 ~= nil then
+                v442.Text = v447
+                local v448 = v442:FindFirstChild("shadow")
+                if v448 ~= nil then
+                    v448.Text = v447
+                end
+            end
+        end
+        if v443 == nil or not v443:IsA("TextLabel") then
+            continue
+        end
+        local v449 = v438.Numeral
+        if v443 == nil then
+            continue
+        end
+        v443.Text = v449
+        local v450 = v443:FindFirstChild("shadow")
+        if v450 == nil then
+            continue
+        end
+        v450.Text = v449
+    end
+    v_u_67.Active = true
+    v_u_147(v_u_67)
+    return true
+end
+local function v_u_459(p452, p453) -- name: bindSideButton
+    -- upvalues: (copy) v_u_74, (copy) v_u_6
+    local v454 = p452:FindFirstChild("BtnLabel")
+    local v455 = p452:FindFirstChild("Sunburst")
+    p452.Active = true
+    p452:SetAttribute("ControllerOwnsHover", true)
+    local v456 = v_u_74
+    local v457 = {
+        ["Button"] = p452
+    }
+    if v454 == nil or not v454:IsA("TextLabel") then
+        v454 = nil
+    end
+    v457.Label = v454
+    v457.Pack = p453
+    if v455 == nil or not v455:IsA("ImageLabel") then
+        v455 = nil
+    end
+    v457.Sunburst = v455
+    local v458 = p452:FindFirstChild("popScale")
+    if v458 == nil or not v458:IsA("UIScale") then
+        v458 = Instance.new("UIScale")
+        v458.Name = "popScale"
+        v458.Parent = p452
+    end
+    v457.PopScale = v458
+    v457.PopSpring = v_u_6.new(1, 0.1)
+    v457.HoverSpring = v_u_6.new(0, 0.16)
+    table.insert(v456, v457)
+end
+local function v_u_466(p460, p461) -- name: bindSkipButton
+    -- upvalues: (copy) v_u_61, (copy) v_u_459, (ref) v_u_75, (copy) v_u_74
+    local v462 = p460:FindFirstChild(v_u_61.Name)
+    if v462 == nil or not v462:IsA("GuiButton") then
+        v462 = p461:Clone()
+        local v463 = v462:FindFirstChild("NameText")
+        v462.Name = v_u_61.Name
+        v462.Position = UDim2.fromScale(1 - p461.Position.X.Scale, p461.Position.Y.Scale)
+        if v462:IsA("ImageButton") then
+            v462.ImageColor3 = v_u_61.Color
+        end
+        if v463 ~= nil and v463:IsA("TextLabel") then
+            v463.Size = v_u_61.LabelSize
+            local v464 = v_u_61.Text
+            if v463 ~= nil then
+                v463.Text = v464
+                local v465 = v463:FindFirstChild("shadow")
+                if v465 ~= nil then
+                    v465.Text = v464
+                end
+            end
+        end
+        v462.Parent = p460
+    end
+    v462.Visible = false
+    v_u_459(v462, nil)
+    v_u_75 = v_u_74[#v_u_74]
+end
+local function v_u_486() -- name: bindInterface
+    -- upvalues: (ref) v_u_63, (ref) v_u_64, (ref) v_u_65, (ref) v_u_66, (ref) v_u_68, (ref) v_u_69, (ref) v_u_70, (copy) v_u_383, (copy) v_u_417, (ref) v_u_73, (ref) v_u_76, (ref) v_u_71, (copy) v_u_163, (copy) v_u_47, (copy) v_u_77, (ref) v_u_78, (copy) v_u_451, (copy) v_u_147, (ref) v_u_72, (copy) v_u_177, (copy) v_u_48, (copy) v_u_433, (copy) v_u_15, (copy) v_u_459, (copy) v_u_466, (ref) v_u_102
+    local v467 = v_u_63
+    if v467 == nil then
+        return false
+    end
+    v_u_64 = v467:FindFirstChild("EnchantPets")
+    v_u_65 = v467:FindFirstChild("EnchantmentOdds")
+    if v_u_64 == nil or v_u_65 == nil then
+        return false
+    end
+    local v468 = v_u_64:FindFirstChild("Content")
+    v_u_66 = v_u_64:FindFirstChild("CloseBTN")
+    if v468 == nil then
+        return false
+    end
+    local v469 = v468:FindFirstChild("AddPets")
+    local v470 = v468:FindFirstChild("CraftResults")
+    local v471
+    if v470 == nil then
+        v471 = nil
+    else
+        v471 = v470:FindFirstChild("Enchantments")
+    end
+    local v472
+    if v470 == nil then
+        v472 = nil
+    else
+        v472 = v470:FindFirstChild("SpinPointer")
+    end
+    local v473
+    if v470 == nil then
+        v473 = nil
+    else
+        v473 = v470:FindFirstChild("Odds")
+    end
+    v_u_68 = v473
+    v_u_69 = v468:FindFirstChild("SpinBTN")
+    local v474
+    if v_u_69 == nil then
+        v474 = nil
+    else
+        v474 = v_u_69:FindFirstChild("BtnLabel")
+    end
+    v_u_70 = v474
+    if v469 == nil or not v_u_383(v469) then
+        return false
+    end
+    if v471 ~= nil then
+        v_u_417(v471)
+    end
+    if v472 ~= nil then
+        local v475 = v472:FindFirstChild("popScale")
+        if v475 == nil or not v475:IsA("UIScale") then
+            v475 = Instance.new("UIScale")
+            v475.Name = "popScale"
+            v475.Parent = v472
+        end
+        v_u_73 = v475
+    end
+    local v476 = v_u_76
+    if v476 ~= nil then
+        v_u_71 = v_u_163(v476.NameLabel, v_u_64, "statusLabel", v_u_47.Position, v_u_47.Size)
+    end
+    if v_u_66 == nil or (not v_u_66:IsA("GuiButton") or (v_u_69 == nil or (not v_u_69:IsA("GuiButton") or (#v_u_77 == 0 or (v_u_78 <= 0 or not v_u_451()))))) then
+        return false
+    end
+    v_u_66.Active = true
+    v_u_69.Active = true
+    v_u_69:SetAttribute("ControllerOwnsHover", true)
+    v_u_147(v_u_66)
+    if v476 ~= nil and v468:IsA("GuiObject") then
+        local v477
+        if v_u_70 == nil then
+            v477 = nil
+        else
+            v477 = v_u_70:FindFirstChildWhichIsA("ImageLabel")
+        end
+        v_u_72 = v_u_177(v468, v476.NameLabel, "spinBalance", v477 == nil and "" or v477.Image, v_u_48.SpinPosition, Enum.HorizontalAlignment.Left)
+    end
+    if v_u_70 ~= nil then
+        v_u_433(v_u_69, v_u_70)
+    end
+    for v478, v479 in {
+        ["BuyOneBTN"] = "Spins1",
+        ["BuyTenBTN"] = "Spins10"
+    } do
+        local v480 = v468:FindFirstChild(v478)
+        local v481 = nil
+        for _, v482 in v_u_15.SPIN_PACKS do
+            if v482.Key ~= v479 then
+                continue
+            end
+            v481 = v482
+        end
+        if v480 == nil or (not v480:IsA("GuiButton") or v481 == nil) then
+            break
+        end
+        v_u_459(v480, v481)
+    end
+    local v483 = v_u_64:FindFirstChild("SpinQuestsBTN")
+    if v483 ~= nil and v483:IsA("GuiButton") then
+        v_u_466(v_u_64, v483)
+        v_u_459(v483, nil)
+    end
+    if v_u_68 ~= nil and v_u_68:IsA("GuiButton") then
+        v_u_68.Active = true
+    end
+    local v484 = v_u_69
+    local v485 = v484:FindFirstChild("popScale")
+    if v485 == nil or not v485:IsA("UIScale") then
+        v485 = Instance.new("UIScale")
+        v485.Name = "popScale"
+        v485.Parent = v484
+    end
+    v_u_102 = v485
+    return true
+end
+function v_u_62.Init(_) -- name: Init
+    -- upvalues: (copy) v_u_24, (ref) v_u_63, (ref) v_u_120, (copy) v_u_127, (ref) v_u_81, (copy) v_u_486
+    local v487 = v_u_24:FindFirstChild("petEnchantGui")
+    if v487 ~= nil and v487:IsA("ScreenGui") then
+        v_u_63 = v487
+        for _, v488 in { "EnchantPets", "EnchantmentOdds" } do
+            local v489 = v487:FindFirstChild(v488)
+            if v489 == nil or not v489:IsA("GuiObject") then
+                continue
+            end
+            v489.Visible = false
+        end
+        v487.ResetOnSpawn = false
+        v487.Enabled = true
+        v_u_120 = v_u_127(v487)
+    end
+    v_u_81 = v_u_486()
+end
+function v_u_62.Start(_) -- name: Start
+    -- upvalues: (copy) v_u_17, (copy) v_u_62, (ref) v_u_81, (copy) v_u_14, (ref) v_u_64, (copy) v_u_11, (copy) v_u_16, (ref) v_u_69, (copy) v_u_74, (ref) v_u_68, (ref) v_u_67, (ref) v_u_65, (ref) v_u_87, (ref) v_u_66, (copy) v_u_32, (ref) v_u_76, (copy) v_u_154, (copy) v_u_105, (copy) v_u_103, (copy) v_u_104, (copy) v_u_15, (copy) v_u_18, (copy) v_u_85, (copy) v_u_8, (copy) v_u_27, (copy) v_u_35, (copy) v_u_209, (copy) v_u_214, (copy) v_u_13
+    v_u_17.Triggered:Connect(function()
+        -- upvalues: (ref) v_u_62
+        v_u_62:Open()
+    end)
+    if v_u_81 then
+        v_u_14.Enabled.Changed:Connect(function()
+            -- upvalues: (ref) v_u_14, (ref) v_u_64, (ref) v_u_11
+            if not v_u_14.IsEnabled() and v_u_64.Visible then
+                v_u_11:CloseMenu(v_u_64)
+            end
+        end)
+        v_u_16:OnChanged(function()
+            -- upvalues: (ref) v_u_62
+            v_u_62:Redraw()
+        end)
+        v_u_69.Activated:Connect(function()
+            -- upvalues: (ref) v_u_62
+            v_u_62:HandleSpinButton()
+        end)
+        for _, v_u_490 in v_u_74 do
+            v_u_490.Button.Activated:Connect(function()
+                -- upvalues: (ref) v_u_62, (copy) v_u_490
+                v_u_62:HandleSideButton(v_u_490)
+            end)
+        end
+        if v_u_68 ~= nil then
+            v_u_68.Activated:Connect(function()
+                -- upvalues: (ref) v_u_62
+                v_u_62:ShowOdds()
+            end)
+        end
+        v_u_67.Activated:Connect(function()
+            -- upvalues: (ref) v_u_62
+            v_u_62:HideOdds()
+        end)
+        v_u_65:GetPropertyChangedSignal("Visible"):Connect(function()
+            -- upvalues: (ref) v_u_65, (ref) v_u_64, (ref) v_u_87, (ref) v_u_16
+            if not v_u_65.Visible then
+                task.defer(function()
+                    -- upvalues: (ref) v_u_64, (ref) v_u_87, (ref) v_u_16
+                    if not v_u_64.Visible and v_u_87 then
+                        v_u_87 = false
+                        v_u_16:ClearSlot()
+                    end
+                end)
+            end
+        end)
+        v_u_66.Activated:Connect(function()
+            -- upvalues: (ref) v_u_32, (ref) v_u_11
+            v_u_32:Play()
+            v_u_11:ResetMenus()
+        end)
+        local v_u_491 = v_u_76
+        if v_u_491 ~= nil then
+            v_u_491.Button.Activated:Connect(function()
+                -- upvalues: (ref) v_u_62
+                v_u_62:HandleSlotActivated()
+            end)
+            local v492 = v_u_491.Well
+            if v492 ~= nil then
+                v492.Activated:Connect(function()
+                    -- upvalues: (ref) v_u_62
+                    v_u_62:HandleSlotActivated()
+                end)
+            end
+            v_u_154(v_u_491.Button, function(p493)
+                -- upvalues: (copy) v_u_491
+                v_u_491.HoverSpring.Target = p493 and 1 or 0
+                v_u_491.PopSpring.Target = p493 and 1.08 or 1
+                v_u_491.PopSpring:Impulse(p493 and 1.2 or -0.6)
+                v_u_491.TiltSpring:Impulse(p493 and 30 or -30)
+            end)
+        end
+        v_u_154(v_u_69, function(p494)
+            -- upvalues: (ref) v_u_69, (ref) v_u_105, (ref) v_u_103, (ref) v_u_104
+            if p494 then
+                p494 = v_u_69.Active
+            end
+            v_u_105.Target = p494 and 1 or 0
+            v_u_103.Target = p494 and 1.06 or 1
+            v_u_103:Impulse(p494 and 1.2 or -0.6)
+            v_u_104:Impulse(p494 and 30 or -30)
+        end)
+        for _, v_u_495 in v_u_74 do
+            v_u_154(v_u_495.Button, function(p496)
+                -- upvalues: (copy) v_u_495
+                if p496 then
+                    p496 = v_u_495.Button.Active
+                end
+                v_u_495.HoverSpring.Target = p496 and 1 or 0
+                v_u_495.PopSpring.Target = p496 and 1.06 or 1
+                v_u_495.PopSpring:Impulse(p496 and 1.2 or -0.6)
+            end)
+        end
+        for _, v_u_497 in v_u_15.SPIN_PACKS do
+            if v_u_497.ProductId <= 0 then
+                continue
+            end
+            task.spawn(function()
+                -- upvalues: (ref) v_u_18, (copy) v_u_497, (ref) v_u_85, (ref) v_u_8, (ref) v_u_62
+                local v498 = v_u_18.get(v_u_497.ProductId, Enum.InfoType.Product)
+                if v498 ~= nil then
+                    v_u_85[v_u_497.Key] = ("%*%*"):format(v_u_8.Robux, (v_u_18.format(v498)))
+                    v_u_62:ApplyButtonState()
+                end
+            end)
+        end
+        local v499 = v_u_27:FindFirstChild("purchaseEvent")
+        if v499 ~= nil and v499:IsA("RemoteEvent") then
+            v499.OnClientEvent:Connect(function(p500)
+                -- upvalues: (ref) v_u_35, (ref) v_u_62
+                if p500 == "petEnchantSpinsPurchased" then
+                    v_u_35:Play()
+                    v_u_62:Redraw()
+                end
+            end)
+        end
+        v_u_64:GetPropertyChangedSignal("Visible"):Connect(function()
+            -- upvalues: (ref) v_u_209, (ref) v_u_64, (ref) v_u_214, (ref) v_u_62, (ref) v_u_13, (ref) v_u_87, (ref) v_u_16
+            v_u_209(v_u_64.Visible)
+            if v_u_64.Visible then
+                v_u_214()
+                v_u_62:Redraw()
+            elseif not (v_u_13:IsPetSelectionActive() or v_u_87) then
+                v_u_16:ClearSlot()
+            end
+        end)
+        task.spawn(function()
+            -- upvalues: (ref) v_u_16
+            for _ = 1, 10 do
+                if v_u_16:GetState().Ok then
+                    return
+                end
+                task.wait(0.4)
+            end
+        end)
+        v_u_62:Redraw()
+    end
+end
+return v_u_62
