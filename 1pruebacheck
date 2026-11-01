@@ -504,7 +504,6 @@ local function triggerTitans()
     end
 end
 
--- ==================== INICIALIZACIÓN DE WINDUI ====================
 local WindUI
 
 do
@@ -563,7 +562,6 @@ local ShopTab = Window:Tab({ Title = "Shop", Icon = "solar:cart-bold", Border = 
 local ConfigTab = Window:Tab({ Title = "Config", Icon = "solar:file-text-bold", Border = true })
 local CreditosTab = Window:Tab({ Title = "Créditos", Icon = "solar:info-circle-bold", Border = true })
 
--- ==================== PESTAÑA PRINCIPAL ====================
 PrincipalTab:Section({ Title = "Información del Desarrollador" })
 PrincipalTab:Paragraph({
     Title = "Creador",
@@ -580,7 +578,6 @@ PrincipalTab:Paragraph({
     Desc = "«Encomienda al Señor tus obras, y tus pensamientos serán afirmados.»"
 })
 
--- ==================== PESTAÑA FARM ====================
 FarmTab:Section({ Title = "Funciones de Farm" })
 
 local AutoToolsSection = FarmTab:Section({ Title = "Auto Tools", Collapsible = true, Opened = false })
@@ -715,7 +712,6 @@ FarmTab:Toggle({
     end
 })
 
--- AUTO CLAIM QUESTS EN FARM
 local AutoClaimSec = FarmTab:Section({ Title = "Auto Claim Quests", Collapsible = true, Opened = false })
 getgenv().AutoClaimEnchantQuests = getgenv().AutoClaimEnchantQuests or false
 
@@ -848,7 +844,6 @@ if not getgenv()._AutoRepFarmLoop then
     end)
 end
 
--- ==================== PESTAÑA REBIRTH ====================
 local RebirthSec = RebirthTab:Section({ Title = "Sistema de Rebirths", Collapsible = true, Opened = false })
 
 RebirthSec:Toggle({
@@ -918,7 +913,6 @@ RebirthSec:Toggle({
     end
 })
 
--- ==================== PESTAÑA ROCK ====================
 local RockSec = RockTab:Section({ Title = "Farming de Rocas", Collapsible = true, Opened = false })
 local activeRock = nil
 
@@ -999,7 +993,6 @@ for _, rockInfo in ipairs(rockList) do
     })
 end
 
--- ==================== PESTAÑA STATS ====================
 StatsTab:Section({ Title = "Estadisticas Tiempo Real" })
 local stopwatchParagraph = StatsTab:Paragraph({ Title = "Fast Rep Time", Desc = "0d 0h 0m 0s" })
 local projectedStrengthParagraph = StatsTab:Paragraph({ Title = "Strength Rate", Desc = "0/s" })
@@ -1108,7 +1101,6 @@ task.spawn(function()
     end
 end)
 
--- ==================== PESTAÑA GIFT ====================
 GiftTab:Section({ Title = "Gift Eggs" })
 local proteinEggParagraph = GiftTab:Paragraph({ Title = "Protein Eggs", Desc = "0" })
 
@@ -1297,7 +1289,6 @@ GiftTab:Toggle({
     end
 })
 
--- ==================== PESTAÑA BOSSES ====================
 local tabs = {}
 tabs.boss = {}
 tabs.boss.runtime = {}
@@ -1833,7 +1824,6 @@ BossesTab:Toggle({
     end
 })
 
--- ==================== BOSS HALLOWEEN ====================
 BossesTab:Section({ Title = "Halloween Boss Farming" })
 
 tabs.boss.Halloween = { 	
@@ -1976,7 +1966,6 @@ tabs.boss.Halloween.AutoFarmSwitch = BossesTab:Toggle({
     end
 })
 
--- ==================== AUTO SPIN HALLOWEEN ====================
 BossesTab:Section({ Title = "Auto Spin Halloween" })
 getgenv().GlobalAutoSpin = getgenv().GlobalAutoSpin or false
 
@@ -2003,40 +1992,6 @@ BossesTab:Toggle({
     end
 })
 
--- ==================== AUTO SPIN NORMAL (FORTUNE WHEEL) ====================
-BossesTab:Section({ Title = "Auto Spin Normal (Fortune Wheel)" })
-getgenv().GlobalNormalAutoSpin = getgenv().GlobalNormalAutoSpin or false
-
-local function startNormalAutoSpin()
-    task.spawn(function()
-        local rEvents = ReplicatedStorage:FindFirstChild("rEvents")
-        local fortuneRemote = rEvents and rEvents:WaitForChild("openFortuneWheelRemote", 30)
-        local fortuneCatalog = ReplicatedStorage:FindFirstChild("shared") and ReplicatedStorage.shared:FindFirstChild("catalogs") and ReplicatedStorage.shared.catalogs:FindFirstChild("fortuneWheelChances") and ReplicatedStorage.shared.catalogs.fortuneWheelChances["Fortune Wheel"]
-        
-        while getgenv().GlobalNormalAutoSpin do
-            if fortuneRemote and fortuneCatalog then
-                pcall(function()
-                    fortuneRemote:InvokeServer("openFortuneWheel", fortuneCatalog)
-                end)
-            end
-            task.wait(0.3)
-        end
-    end)
-end
-
-BossesTab:Toggle({
-    Title = "Auto Spin Ruleta Normal",
-    Description = "Gira la ruleta de la fortuna normal automáticamente.",
-    Value = getgenv().GlobalNormalAutoSpin,
-    Callback = function(state)
-        getgenv().GlobalNormalAutoSpin = state
-        if state then
-            startNormalAutoSpin()
-        end
-    end
-})
-
--- ==================== PESTAÑA TELEPORT ====================
 TeleportTab:Section({ Title = "Zonas del Mapa" })
 local function tpTo(cf, name)
     pcall(function()
@@ -2063,7 +2018,6 @@ TeleportTab:Button({ Title = "Jungle Island", Callback = function() tpTo(CFrame.
 TeleportTab:Button({ Title = "Industrial Gym", Callback = function() tpTo(CFrame.new(-5563.23388671875, 60.47392654418945, 4942.44482421875), "Industrial Gym") end })
 TeleportTab:Button({ Title = "Halloween Gym", Callback = function() tpTo(CFrame.new(5558, 86, 5838), "Halloween Gym") end })
 
--- ==================== PESTAÑA RACE ====================
 RaceTab:Section({ Title = "Sistema de Auto Race" })
 local RaceStatusParagraph = RaceTab:Paragraph({ Title = "Estado", Desc = "ZONE: IDLE" })
 
@@ -2206,7 +2160,6 @@ RaceTab:Toggle({
     end
 })
 
--- SHOP MEDALLAS EN RACE TAB
 local MedalsShopSec = RaceTab:Section({ Title = "🛒 Auto Shop (Medal Items)" })
 local ShopItems = {
     {Name = "Protein Shake", Key = "ProteinShake_x1", Price = 40, Slot = 1},
@@ -2269,7 +2222,6 @@ for _, item in ipairs(ShopItems) do
     })
 end
 
--- ==================== PESTAÑA SHOP ====================
 ShopTab:Section({ Title = "Auto Comprar Cristales (Crystals)" })
 local crystalList = {
     "Blue Crystal", "Green Crystal", "Frost Crystal", "Inferno Crystal", "Mythical Crystal", "Legend Crystal", "Muscle King Crystal", "Jungle Crystal", "Dark Crystal", "Vampire Crystal", "Halloween Crystal"
@@ -2324,7 +2276,6 @@ ShopTab:Toggle({
     end
 })
 
--- ==================== PESTAÑA CONFIG ====================
 ConfigTab:Section({ Title = "Rendimiento y Optimización" })
 
 ConfigTab:Toggle({
