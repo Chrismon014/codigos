@@ -1,0 +1,39 @@
+-- Script Path: game:GetService("ReplicatedStorage").client.components.PetEnchantBillboardComponent
+-- Took 0s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+local v1 = require("@game/ReplicatedStorage/packages/Component")
+local v_u_2 = require("@game/ReplicatedStorage/packages/Trove")
+local v_u_3 = require("@game/ReplicatedStorage/client/utils/PetEnchantBadge")
+local v_u_4 = require("@game/ReplicatedStorage/shared/config/PetEnchantConfig")
+local v5 = v1.new({
+    ["Tag"] = v_u_4.BILLBOARD_TAG,
+    ["Ancestors"] = { workspace }
+})
+function v5.Construct(p6) -- name: Construct
+    -- upvalues: (copy) v_u_2
+    p6._trove = v_u_2.new()
+end
+function v5.Start(p7) -- name: Start
+    -- upvalues: (copy) v_u_4, (copy) v_u_3
+    local v_u_8 = p7.Instance
+    local v_u_9 = v_u_8:FindFirstChild(v_u_4.BILLBOARD_LEVEL_LABEL)
+    if v_u_8:IsA("BillboardGui") and (v_u_9 ~= nil and v_u_9:IsA("TextLabel")) then
+        local v10 = p7._trove
+        local function v11() -- name: layout
+            -- upvalues: (ref) v_u_3, (copy) v_u_9
+            v_u_3.LayoutBeside(v_u_9)
+        end
+        v10:Connect(v_u_8.AttributeChanged, function()
+            -- upvalues: (ref) v_u_3, (copy) v_u_9, (copy) v_u_8
+            v_u_3.ApplyBeside(v_u_9, v_u_8)
+        end)
+        v10:Connect(v_u_9:GetPropertyChangedSignal("TextBounds"), v11)
+        v10:Connect(v_u_8:GetPropertyChangedSignal("AbsoluteSize"), v11)
+        v_u_3.ApplyBeside(v_u_9, v_u_8)
+    end
+end
+function v5.Stop(p12) -- name: Stop
+    p12._trove:Destroy()
+end
+return v5
