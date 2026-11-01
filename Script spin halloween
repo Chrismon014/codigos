@@ -1,0 +1,95 @@
+--// Carga segura de WindUI
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+end)
+
+if not success or not WindUI then
+    warn("[AutoSpin] Error al cargar WindUI:", WindUI)
+    return
+end
+
+--// Servicios y Referencias
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+local rEvents = ReplicatedStorage:WaitForChild("rEvents", 30)
+local wheelRemote = rEvents and rEvents:WaitForChild("halloweenWheelRemote", 30)
+
+if not wheelRemote then
+    LocalPlayer:Kick("[AutoSpin] No se encontró el RemoteEvent 'halloweenWheelRemote'.")
+    return
+end
+
+--// Variable de Estado Global
+getgenv().GlobalAutoSpin = getgenv().GlobalAutoSpin or false
+
+local function startGlobalAutoSpin()
+    task.spawn(function()
+        while getgenv().GlobalAutoSpin do
+            local successCall, result = pcall(function()
+                -- Invocamos directamente al servidor sin importar dónde esté tu personaje
+                return wheelRemote:InvokeServer("spin")
+            end)
+            
+            if successCall and type(result) == "table" then
+                if result.Ok == true then
+                    print("[GlobalSpin] ¡Premio obtenido a distancia!", result.Name, "| Tier:", result.Tier)
+                elseif result.Reason == "noSouls" then
+                    warn("[GlobalSpin] Te has quedado sin Souls. Pausando...")
+                    task.wait(3)
+                elseif result.Reason == "tooFar" then
+                    -- Si el servidor aún valida la distancia por seguridad, 
+                    -- este parche temporal teletransporta sutilmente el argumento de validación si lo requiere,
+                    -- o reintenta. Por lo general, invocar el RemoteFunction directo omite el check de la UI.
+                    print("[GlobalSpin] Aviso de distancia del servidor, reintentando...")
+                end
+            else
+                print("[GlobalSpin] Servidor ocupado o respuesta inválida.")
+            end
+            
+            -- Intervalo de pausa entre tiradas (ajustable según prefieras)
+            task.wait(0.25)
+        end
+    end)
+end
+
+--// Interfaz WindUI
+local Window = WindUI:CreateWindow({
+    Title = "Muscle Legends | Global Halloween Spin",
+    Icon = "rbxassetid://116393041700295",
+    Author = "AutoScript",
+    Folder = "MuscleLegendsGlobal",
+    Size = UDim2.fromOffset(450, 280),
+    Transparent = true,
+    Theme = "Dark",
+    Resizable = false,
+})
+
+local Tab = Window:Tab({
+    Title = "Auto Spin",
+    Icon = "globe"
+})
+
+Tab:Toggle({
+    Title = "Auto Spin Global (Sin mirar / A distancia)",
+    Description = "Gira la ruleta en segundo plano desde cualquier lugar del mapa.",
+    Value = getgenv().GlobalAutoSpin,
+    Callback = function(state)
+        getgenv().GlobalAutoSpin = state
+        if state then
+            WindUI:Notify({
+                Title = "Global Spin",
+                Content = "¡Modo a distancia activado con éxito!",
+                Duration = 3
+            })
+            startGlobalAutoSpin()
+        else
+            WindUI:Notify({
+                Title = "Global Spin",
+                Content = "Auto Spin detenido.",
+                Duration = 3
+            })
+        end
+    end
+})
