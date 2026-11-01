@@ -1,0 +1,295 @@
+-- Script Path: game:GetService("ReplicatedStorage").client.controllers.PetEnchantController
+-- Took 0.02s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+local v1 = game:GetService("Players")
+local v2 = game:GetService("ReplicatedStorage")
+local v3 = require("@game/ReplicatedStorage/packages/ReplicatorClient")
+local v_u_4 = require("@game/ReplicatedStorage/shared/modules/ExclusiveEgg")
+local v_u_5 = require("@game/ReplicatedStorage/shared/modules/PetEnchant")
+local v_u_6 = require("@game/ReplicatedStorage/shared/config/PetEnchantConfig")
+local v_u_7 = v1.LocalPlayer
+local v_u_8 = v2.rEvents
+local v_u_9 = v3.get("Data")
+local v_u_10 = table.freeze({
+    ["empty"] = "Add a pet to enchant it.",
+    ["notOwned"] = "That pet is not in your inventory.",
+    ["tradeLocked"] = "This pet is locked in a trade.",
+    ["hidden"] = "This pet cannot be enchanted yet.",
+    ["noStats"] = "This pet has no stats to enchant.",
+    ["noSpins"] = "You are out of spins! Get more with +1 Spin, +10 Spins or Spin Quests.",
+    ["cooldown"] = "Slow down a moment.",
+    ["rateLimited"] = "Slow down a moment.",
+    ["busy"] = "Your last enchant is still finishing.",
+    ["tooFar"] = "Get closer to the enchanting machine.",
+    ["notReady"] = "Still loading your data.",
+    ["invalidRequest"] = "Something went wrong. Try again.",
+    ["noRemote"] = "Enchanting is not available right now.",
+    ["disabled"] = "Pet enchanting is unavailable right now."
+})
+local v_u_11 = {
+    ["REASON_MESSAGES"] = v_u_10
+}
+local v_u_12 = nil
+local v_u_13 = nil
+local v_u_14 = {}
+local v_u_15 = {}
+local v_u_16 = 0
+local v_u_17 = 0
+local v_u_18 = 0
+local v_u_19 = 0
+local function v_u_23() -- name: notifyChanged
+    -- upvalues: (copy) v_u_15
+    for _, v20 in v_u_15 do
+        local v21, v22 = pcall(v20)
+        if v21 then
+            continue
+        end
+        warn((("[PetEnchant] Changed listener errored: %*"):format(v22)))
+    end
+end
+local function v_u_30() -- name: readReplicatedState
+    -- upvalues: (copy) v_u_6, (ref) v_u_18, (copy) v_u_9, (ref) v_u_19
+    local v24 = v_u_6.PROFILE_KEY
+    local v25 = v_u_9:TryIndex({ v24, "Spins" })
+    v_u_18 = typeof(v25) ~= "number" and 0 or v25
+    local v26 = v_u_9:TryIndex({ v24, "FreeSpinReadyAt" })
+    local v27 = typeof(v26) ~= "number" and 0 or v26
+    local v28 = os.clock()
+    local v29 = v27 - workspace:GetServerTimeNow()
+    v_u_19 = v28 + math.max(v29, 0)
+end
+function v_u_11.OnChanged(_, p31) -- name: OnChanged
+    -- upvalues: (ref) v_u_16, (copy) v_u_15
+    v_u_16 = v_u_16 + 1
+    local v_u_32 = v_u_16
+    v_u_15[v_u_32] = p31
+    return function()
+        -- upvalues: (ref) v_u_15, (copy) v_u_32
+        v_u_15[v_u_32] = nil
+    end
+end
+function v_u_11.GetSlotPet(_) -- name: GetSlotPet
+    -- upvalues: (ref) v_u_13
+    local v33 = v_u_13
+    if v33 == nil or v33.Parent ~= nil then
+        return v33
+    else
+        return nil
+    end
+end
+function v_u_11.IsInSlot(_, p34) -- name: IsInSlot
+    -- upvalues: (ref) v_u_13
+    return v_u_13 == p34
+end
+function v_u_11.SetSlot(_, p_u_35) -- name: SetSlot
+    -- upvalues: (ref) v_u_13, (copy) v_u_14, (copy) v_u_23, (copy) v_u_6
+    if v_u_13 == p_u_35 then
+        return false
+    end
+    for _, v36 in v_u_14 do
+        v36:Disconnect()
+    end
+    table.clear(v_u_14)
+    v_u_13 = p_u_35
+    if p_u_35 ~= nil then
+        local v37 = v_u_14
+        local v38 = p_u_35.AncestryChanged
+        local function v40()
+            -- upvalues: (copy) p_u_35, (ref) v_u_13, (ref) v_u_14, (ref) v_u_23
+            if p_u_35.Parent == nil and v_u_13 == p_u_35 then
+                for _, v39 in v_u_14 do
+                    v39:Disconnect()
+                end
+                table.clear(v_u_14)
+                v_u_13 = nil
+                v_u_23()
+            end
+        end
+        table.insert(v37, v38:Connect(v40))
+        local v41 = v_u_14
+        local v42 = p_u_35:GetAttributeChangedSignal("TradeLocked")
+        local v43 = v_u_23
+        table.insert(v41, v42:Connect(v43))
+        local v44 = v_u_14
+        local v45 = p_u_35:GetAttributeChangedSignal(v_u_6.ENCHANT_ATTRIBUTE)
+        local v46 = v_u_23
+        table.insert(v44, v45:Connect(v46))
+        local v47 = v_u_14
+        local v48 = p_u_35:GetAttributeChangedSignal(v_u_6.TIER_ATTRIBUTE)
+        local v49 = v_u_23
+        table.insert(v47, v48:Connect(v49))
+    end
+    v_u_23()
+    return true
+end
+function v_u_11.ClearSlot(_) -- name: ClearSlot
+    -- upvalues: (copy) v_u_11
+    return v_u_11:SetSlot(nil)
+end
+function v_u_11.DescribePet(_, p50) -- name: DescribePet
+    -- upvalues: (copy) v_u_5, (copy) v_u_7, (copy) v_u_4
+    if v_u_5.IsOwnedPet(v_u_7, p50) then
+        if p50:GetAttribute("TradeLocked") == true then
+            return false, "tradeLocked"
+        elseif v_u_4.IsHidden(p50) then
+            return false, "hidden"
+        elseif #v_u_5.GetEligible(p50) == 0 then
+            return false, "noStats"
+        else
+            return true, nil
+        end
+    else
+        return false, "notOwned"
+    end
+end
+function v_u_11.DescribeReason(_, p51) -- name: DescribeReason
+    -- upvalues: (copy) v_u_10
+    if p51 == nil then
+        return nil
+    else
+        return v_u_10[p51]
+    end
+end
+function v_u_11.GetCooldownRemaining(_) -- name: GetCooldownRemaining
+    -- upvalues: (ref) v_u_17
+    local v52 = v_u_17 - os.clock()
+    return math.max(v52, 0)
+end
+function v_u_11.GetSpins(_) -- name: GetSpins
+    -- upvalues: (ref) v_u_18
+    return v_u_18
+end
+function v_u_11.GetFreeSpinRemaining(_) -- name: GetFreeSpinRemaining
+    -- upvalues: (ref) v_u_19
+    local v53 = v_u_19 - os.clock()
+    return math.max(v53, 0)
+end
+local function v_u_71(p_u_54) -- name: invoke
+    -- upvalues: (copy) v_u_5, (ref) v_u_12, (copy) v_u_8, (copy) v_u_6, (copy) v_u_11, (ref) v_u_17, (ref) v_u_18, (ref) v_u_19
+    if v_u_5.IsEnabled() then
+        local v_u_55
+        if v_u_12 == nil then
+            v_u_55 = v_u_8:WaitForChild(v_u_6.REMOTE_NAME, 15)
+            if v_u_55 == nil then
+                warn("[PetEnchant] Enchant remote never appeared; enchanting is unavailable.")
+                v_u_55 = nil
+            else
+                local v56 = v_u_55:IsA("RemoteFunction")
+                local v57 = ("%* must be a RemoteFunction"):format(v_u_6.REMOTE_NAME)
+                assert(v56, v57)
+                v_u_12 = v_u_55
+            end
+        else
+            v_u_55 = v_u_12
+        end
+        if v_u_55 == nil then
+            return {
+                ["Ok"] = false,
+                ["Reason"] = "noRemote"
+            }
+        else
+            local v_u_58 = v_u_11:GetSlotPet()
+            local v59, v60 = pcall(function()
+                -- upvalues: (copy) v_u_55, (copy) p_u_54, (copy) v_u_58
+                return v_u_55:InvokeServer(p_u_54, v_u_58)
+            end)
+            if v59 then
+                if typeof(v60) == "table" then
+                    local v61 = v60.Ok
+                    if typeof(v61) == "boolean" then
+                        local v62 = v60.RetryAfter
+                        if typeof(v62) == "number" then
+                            local v63 = v_u_17
+                            local v64 = os.clock() + v60.RetryAfter
+                            v_u_17 = math.max(v63, v64)
+                        end
+                        local v65 = v60.State
+                        if typeof(v65) == "table" then
+                            local v66 = v60.State
+                            local v67 = v66.Spins
+                            v_u_18 = typeof(v67) ~= "number" and 0 or v67
+                            local v68 = os.clock()
+                            local v69 = v66.FreeSpinRemaining
+                            local v70 = typeof(v69) ~= "number" and 0 or v69
+                            v_u_19 = v68 + math.max(v70, 0)
+                        end
+                        return v60
+                    end
+                end
+                return {
+                    ["Ok"] = false,
+                    ["Reason"] = "invalidRequest"
+                }
+            else
+                warn((("[PetEnchant] %* failed: %*"):format(p_u_54, v60)))
+                return {
+                    ["Ok"] = false,
+                    ["Reason"] = "invalidRequest"
+                }
+            end
+        end
+    else
+        return {
+            ["Ok"] = false,
+            ["Reason"] = "disabled"
+        }
+    end
+end
+function v_u_11.GetState(_) -- name: GetState
+    -- upvalues: (copy) v_u_71, (copy) v_u_23
+    local v72 = v_u_71("getState")
+    if v72.Ok then
+        v_u_23()
+    end
+    return v72
+end
+function v_u_11.Spin(_) -- name: Spin
+    -- upvalues: (copy) v_u_71, (copy) v_u_23
+    local v73 = v_u_71("spin")
+    v_u_23()
+    return v73
+end
+function v_u_11.Init(_) -- name: Init
+    -- upvalues: (copy) v_u_30
+    v_u_30()
+end
+function v_u_11.Start(_) -- name: Start
+    -- upvalues: (copy) v_u_6, (copy) v_u_9, (copy) v_u_30, (copy) v_u_23, (ref) v_u_12, (copy) v_u_8, (copy) v_u_7
+    local v74 = v_u_6.PROFILE_KEY
+    for _, v75 in { "Spins", "FreeSpinReadyAt" } do
+        v_u_9:Observe({ v74, v75 }, function()
+            -- upvalues: (ref) v_u_30, (ref) v_u_23
+            v_u_30()
+            v_u_23()
+        end)
+    end
+    local v76
+    if v_u_12 == nil then
+        v76 = v_u_8:WaitForChild(v_u_6.REMOTE_NAME, 15)
+        if v76 == nil then
+            warn("[PetEnchant] Enchant remote never appeared; enchanting is unavailable.")
+            v76 = nil
+        else
+            local v77 = v76:IsA("RemoteFunction")
+            local v78 = ("%* must be a RemoteFunction"):format(v_u_6.REMOTE_NAME)
+            assert(v77, v78)
+            v_u_12 = v76
+        end
+    else
+        v76 = v_u_12
+    end
+    if v76 ~= nil then
+        local v79 = v_u_7:FindFirstChild("petsFolder")
+        if v79 ~= nil then
+            for _, v80 in v79:GetChildren() do
+                if not v80:IsA("Folder") then
+                    continue
+                end
+                v80.ChildAdded:Connect(v_u_23)
+                v80.ChildRemoved:Connect(v_u_23)
+            end
+        end
+    end
+end
+return v_u_11
