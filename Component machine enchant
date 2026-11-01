@@ -1,0 +1,105 @@
+-- Script Path: game:GetService("ReplicatedStorage").client.components.PetEnchantMachineComponent
+-- Took 0s to decompile.
+-- Executor: Delta (1.1.743.1136)
+
+local v1 = game:GetService("Players")
+local v2 = require("@game/ReplicatedStorage/packages/Component")
+local v3 = require("@game/ReplicatedStorage/packages/Signal")
+local v_u_4 = require("@game/ReplicatedStorage/packages/Trove")
+local v_u_5 = require("@game/ReplicatedStorage/shared/modules/PetEnchant")
+local v_u_6 = require("@game/ReplicatedStorage/shared/config/PetEnchantConfig")
+local v_u_7 = v1.LocalPlayer
+local v_u_8 = v2.new({
+    ["Tag"] = v_u_6.MACHINE_TAG,
+    ["Ancestors"] = { workspace }
+})
+v_u_8.Triggered = v3.new()
+function v_u_8.Construct(p9) -- name: Construct
+    -- upvalues: (copy) v_u_4
+    p9._trove = v_u_4.new()
+    p9._prompt = nil
+    p9._reachElapsed = 0.25
+end
+function v_u_8.Start(p10) -- name: Start
+    -- upvalues: (copy) v_u_6, (copy) v_u_7, (copy) v_u_8
+    local v11 = p10._trove
+    local v12 = p10.Instance
+    local v13
+    if v12:IsA("BasePart") then
+        v13 = v12
+    else
+        v13 = v12:FindFirstChildWhichIsA("BasePart", true)
+    end
+    if v13 == nil then
+        warn((("[PetEnchant] Tagged machine \'%*\' has no BasePart for its prompt"):format((v12:GetFullName()))))
+    else
+        local v14 = Instance.new("ProximityPrompt")
+        v14.Name = v_u_6.MACHINE_PROMPT_NAME
+        v14.ActionText = v_u_6.MACHINE_PROMPT_TEXT
+        v14.RequiresLineOfSight = false
+        v14.MaxActivationDistance = v_u_6.MACHINE_PROMPT_ACTIVATION_DISTANCE
+        v14.Enabled = false
+        v14.Parent = v13
+        v11:Add(v14)
+        v11:Connect(v14.Triggered, function(p15)
+            -- upvalues: (ref) v_u_7, (ref) v_u_8
+            if p15 == v_u_7 then
+                v_u_8.Triggered:Fire()
+            end
+        end)
+        p10._prompt = v14
+    end
+end
+function v_u_8.Stop(p16) -- name: Stop
+    p16._trove:Destroy()
+end
+function v_u_8.IsWithinReach(p17, p18) -- name: IsWithinReach
+    -- upvalues: (copy) v_u_7, (copy) v_u_5
+    local v19 = p17:GetInteractPosition()
+    local v20 = v_u_7.Character
+    local v21
+    if v20 == nil then
+        v21 = nil
+    else
+        v21 = v20:FindFirstChild("HumanoidRootPart")
+    end
+    if v19 == nil or (v21 == nil or not v21:IsA("BasePart")) then
+        return false
+    else
+        return v_u_5.IsWithinReach(v21, v19, p18, v_u_5.GetHeightScale(v20))
+    end
+end
+function v_u_8.HeartbeatUpdate(p22, p23) -- name: HeartbeatUpdate
+    -- upvalues: (copy) v_u_6
+    p22._reachElapsed = p22._reachElapsed + p23
+    if p22._reachElapsed >= 0.25 then
+        p22._reachElapsed = 0
+        local v24 = p22._prompt
+        if v24 ~= nil and v24.Parent ~= nil then
+            v24.Enabled = p22:IsWithinReach(v_u_6.MACHINE_PROMPT_DISTANCE)
+        end
+    end
+end
+function v_u_8.GetInteractPosition(p25) -- name: GetInteractPosition
+    local v26 = p25.Instance
+    if v26:IsA("PVInstance") and v26:IsDescendantOf(workspace) then
+        return v26:GetPivot().Position
+    else
+        return nil
+    end
+end
+function v_u_8.IsPlayerNear(_) -- name: IsPlayerNear
+    -- upvalues: (copy) v_u_8, (copy) v_u_6
+    local v27 = false
+    for _, v28 in v_u_8:GetAll() do
+        if v28:GetInteractPosition() == nil then
+            continue
+        end
+        if v28:IsWithinReach(v_u_6.MACHINE_INTERACT_DISTANCE) then
+            return true
+        end
+        v27 = true
+    end
+    return not v27
+end
+return v_u_8
