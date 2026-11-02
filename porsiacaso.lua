@@ -504,16 +504,21 @@ local function triggerTitans()
     end
 end
 
--- ==================== INICIALIZACIÓN ROBUSTA DE WINDUI ====================
 local WindUI
+
 do
 	local ok, result = pcall(function()
-		return loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+		return require("./src/Init")
 	end)
-	if ok and result then
+
+	if ok then
 		WindUI = result
 	else
-		WindUI = require(ReplicatedStorage:WaitForChild("WindUI"):WaitForChild("Init"))
+		if cloneref(game:GetService("RunService")):IsStudio() then
+			WindUI = require(cloneref(ReplicatedStorage:WaitForChild("WindUI"):WaitForChild("Init")))
+		else
+			WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+		end
 	end
 end
 
@@ -542,7 +547,7 @@ local Window = WindUI:CreateWindow({
 	},
 })
 
-Window:SetUIScale(1.15)
+Window:SetUIScale(0.85)
 
 local PrincipalTab = Window:Tab({ Title = "Principal", Icon = "solar:home-2-bold", Border = true })
 local FarmTab = Window:Tab({ Title = "Farm", Icon = "solar:settings-bold", Border = true })
@@ -555,9 +560,336 @@ local TeleportTab = Window:Tab({ Title = "Teleport", Icon = "solar:map-bold", Bo
 local RaceTab = Window:Tab({ Title = "Race", Icon = "solar:running-bold", Border = true })
 local ShopTab = Window:Tab({ Title = "Shop", Icon = "solar:cart-bold", Border = true })
 local ConfigTab = Window:Tab({ Title = "Config", Icon = "solar:file-text-bold", Border = true })
+local HalloweenTab = Window:Tab({ Title = "Halloween", Icon = "solar:moon-stars-bold", Border = true })
 local CreditosTab = Window:Tab({ Title = "Créditos", Icon = "solar:info-circle-bold", Border = true })
 
--- ==================== PESTAÑA PRINCIPAL ====================
+RaceTab:Section({ Title = "Sistema de Auto Race" })
+
+do
+    local PlayerGui = LP:WaitForChild("PlayerGui")
+    local RaceStatusParagraph = RaceTab:Paragraph({ Title = "Estado", Desc = "ZONE: IDLE" })
+
+    local function setRaceZone(text)
+        if RaceStatusParagraph then RaceStatusParagraph:SetDesc(text) end
+    end
+
+    local ZoneColors = {
+        Yellow = Color3.fromRGB(221, 181, 0),
+        Blue   = Color3.fromRGB(0, 115, 181),
+        Purple = Color3.fromRGB(100, 30, 120),
+        Red    = Color3.fromRGB(180, 0, 0),
+        Green  = Color3.fromRGB(0, 130, 0)
+    }
+    local SPAWN_POS = Vector3.new(-12640, 6.351, -4197)
+    local NEW_START_POS = Vector3.new(-12865.279296875, 6.390514373779297, -4201.7236328125)
+    local FINISH_POS = Vector3.new(-14544.0263671875, 6.3919878005981445, -4131.28662109375)
+    local forwardDir, isFinished, originalSpeed, lastTeleportTime = nil, false, 50, 0
+    local RaceInMinigame = false
+    local cachedDragPart = nil
+    local dragWeld = nil
+
+    local function getZone(hrp, char)
+        local params = RaycastParams.new()
+        params.FilterDescendantsInstances = {char}
+        params.FilterType = Enum.RaycastFilterType.Exclude
+        local result = Workspace:Raycast(hrp.Position - Vector3.new(0, 5, 0), Vector3.new(0, -25, 0), params)
+        if result then
+            local color = result.Instance.Color
+            for zoneName, zoneColor in pairs(ZoneColors) do
+                if (color.R - zoneColor.R)^2 + (color.G - zoneColor.G)^2 + (color.B - zoneColor.B)^2 < 0.1 then
+                    return zoneName
+                end
+            end
+        end
+        return "Unknown"
+    end
+
+    local function cleanupDragWeld()
+        if dragWeld then
+            dragWeld:Destroy()
+            dragWeld = nil
+        end
+        if cachedDragPart then
+            cachedDragPart.CanCollide = true
+            cachedDragPart = nil
+        end
+    end
+
+    local function startAutoRace()
+        if State.AutoRace then return end
+        State.AutoRace = true
+        forwardDir = nil
+        isFinished = false
+        RaceInMinigame = false
+        local char = LP.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+
+        if hum then
+            originalSpeed = 50
+            hum.WalkSpeed = 50
+        end
+
+        task.spawn(function()
+            while State.AutoRace do
+                local char = LP.Character
+                local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                local hum = char and char:FindFirstChildOfClass("Humanoid")
+                if hrp and hum then
+                    hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+                    hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+                    hum:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
+                    hum:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
+                    hum.PlatformStand = false
+                    if hum.Sit then hum.Sit = false end
+
+                    local rx, ry, rz = hrp.CFrame:ToEulerAnglesYXZ()
+                    if math.abs(rx) > 0.2 or math.abs(rz) > 0.2 then
+                        hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, ry, 0)
+                    end
+                    hrp.AssemblyAngularVelocity = Vector3.zero
+
+                    local zone = getZone(hrp, char)
+                    setRaceZone("ZONE: " .. string.upper(zone))
+
+                    local isRed = (zone == "Red")
+                    local isPurple = (zone == "Purple")
+                    local isGreen = (zone == "Green")
+                    local isBlue = (zone == "Blue")
+                    local isYellow = (zone == "Yellow")
+
+                    RaceInMinigame = (isRed or isPurple)
+
+                    if (hrp.Position - SPAWN_POS).Magnitude < 50 and tick() - lastTeleportTime > 3 then
+                        lastTeleportTime = tick()
+                        hrp.CFrame = CFrame.new(NEW_START_POS)
+                        isFinished = false
+                        task.wait(1)
+                    end
+
+                    if not forwardDir and (isYellow or isBlue or isGreen) then
+                        local look = hrp.CFrame.LookVector
+                        forwardDir = Vector3.new(look.X, 0, look.Z).Unit
+                    end
+
+                    -- Zona morada (solo remote)
+                    if isPurple then
+                        pcall(function()
+                            local minigames = RS:FindFirstChild("client") and RS.client:FindFirstChild("strongbloxian") and RS.client.strongbloxian:FindFirstChild("minigames")
+                            if minigames and minigames:FindFirstChild("HeavyLift") then
+                                local remote = minigames.HeavyLift
+                                if remote:IsA("RemoteFunction") then
+                                    pcall(function() remote:InvokeServer(true) end)
+                                    pcall(function() remote:InvokeServer() end)
+                                elseif remote:IsA("RemoteEvent") then
+                                    pcall(function() remote:FireServer(true) end)
+                                    pcall(function() remote:FireServer() end)
+                                end
+                            end
+                        end)
+                    end
+
+                    local distToEnd = (hrp.Position - FINISH_POS).Magnitude
+
+                    if isFinished then
+                        hum.WalkSpeed = 0
+                        hrp.AssemblyLinearVelocity = Vector3.zero
+                        hrp.AssemblyAngularVelocity = Vector3.zero
+                    elseif isRed or isPurple then
+                        -- Detenerse en rojo y morado
+                        hum.WalkSpeed = 0
+                        hum:MoveTo(hrp.Position)
+                        hrp.AssemblyLinearVelocity = Vector3.zero
+                        hrp.AssemblyAngularVelocity = Vector3.zero
+                        cleanupDragWeld()
+                    elseif isGreen or distToEnd < 150 then
+                        hum.WalkSpeed = originalSpeed
+                        if distToEnd > 5 then
+                            local targetVel = (FINISH_POS - hrp.Position).Unit * originalSpeed
+                            hrp.AssemblyLinearVelocity = Vector3.new(targetVel.X, hrp.AssemblyLinearVelocity.Y, targetVel.Z)
+                        else
+                            isFinished = true
+                            hum.WalkSpeed = 0
+                            hrp.AssemblyLinearVelocity = Vector3.zero
+                            hrp.AssemblyAngularVelocity = Vector3.zero
+                        end
+                    elseif isBlue then
+                        -- Zona azul (heavy pull): mover y soldar objeto
+                        hum.WalkSpeed = 45
+                        if forwardDir then
+                            hum:MoveTo(hrp.Position + forwardDir * 10)
+
+                            if not cachedDragPart or not cachedDragPart.Parent then
+                                for _, v in ipairs(Workspace:GetChildren()) do
+                                    if v:IsA("RopeConstraint") then
+                                        local part1 = v.Attachment0 and v.Attachment0.Parent
+                                        local part2 = v.Attachment1 and v.Attachment1.Parent
+
+                                        if part1 and part1:IsA("BasePart") and part1 ~= hrp and (part1.Position - hrp.Position).Magnitude < 30 then cachedDragPart = part1 end
+                                        if part2 and part2:IsA("BasePart") and part2 ~= hrp and (part2.Position - hrp.Position).Magnitude < 30 then cachedDragPart = part2 end
+                                        if cachedDragPart then break end
+                                    end
+                                end
+                            end
+
+                            if cachedDragPart then
+                                cachedDragPart.CanCollide = false
+                                if not dragWeld or not dragWeld.Parent then
+                                    dragWeld = Instance.new("WeldConstraint")
+                                    dragWeld.Part0 = hrp
+                                    dragWeld.Part1 = cachedDragPart
+                                    dragWeld.Parent = hrp
+                                end
+                            end
+                        end
+                    else
+                        hum.WalkSpeed = originalSpeed
+                        if forwardDir then
+                            local targetVel = forwardDir * originalSpeed
+                            hrp.AssemblyLinearVelocity = Vector3.new(targetVel.X, hrp.AssemblyLinearVelocity.Y, targetVel.Z)
+                        end
+                    end
+                end
+                RunService.Heartbeat:Wait()
+            end
+        end)
+    end
+
+    local function stopAutoRace()
+        State.AutoRace = false
+        isFinished = false
+        RaceInMinigame = false
+        local char = LP.Character
+        if char and char:FindFirstChildOfClass("Humanoid") then
+            local hum = char.Humanoid
+            hum:MoveTo(char.HumanoidRootPart.Position)
+            hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+            hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
+            hum:SetStateEnabled(Enum.HumanoidStateType.Physics, true)
+            hum:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, true)
+        end
+        setRaceZone("ZONE: IDLE")
+        cleanupDragWeld()
+    end
+
+    -- === AUTO HURDLE JUMP ===
+    local HURDLE_FIRST = 35
+    local HURDLE_GAP = 57
+    local HURDLE_COUNT = 10
+    local JUMP_LEAD_TIME = 0.25
+
+    local hurdleLabel = nil
+    local lastLabelSearch = 0
+
+    local function isShown(gui)
+        local cur = gui
+        while cur and cur ~= PlayerGui do
+            if cur:IsA("GuiObject") and not cur.Visible then return false end
+            if cur:IsA("ScreenGui") and not cur.Enabled then return false end
+            cur = cur.Parent
+        end
+        return true
+    end
+
+    local function findHurdleLabel()
+        if hurdleLabel and hurdleLabel.Parent then return hurdleLabel end
+        hurdleLabel = nil
+        if tick() - lastLabelSearch < 1 then return nil end
+        lastLabelSearch = tick()
+        for _, d in ipairs(PlayerGui:GetDescendants()) do
+            if d:IsA("TextLabel") and string.find(string.upper(d.Text), "NEXT HURDLE", 1, true) then
+                hurdleLabel = d
+                break
+            end
+        end
+        return hurdleLabel
+    end
+
+    local function getHurdleDistance(hrp)
+        local lbl = findHurdleLabel()
+        if lbl then
+            if not isShown(lbl) then return nil end
+            local n = string.match(string.upper(lbl.Text), "NEXT HURDLE%D*(%d+)")
+            if n then return tonumber(n) end
+        end
+        local dir = Vector3.new(FINISH_POS.X - NEW_START_POS.X, 0, FINISH_POS.Z - NEW_START_POS.Z).Unit
+        local rel = hrp.Position - NEW_START_POS
+        local progress = rel.X * dir.X + rel.Z * dir.Z
+        for i = 1, HURDLE_COUNT do
+            local pos = HURDLE_FIRST + HURDLE_GAP * (i - 1)
+            if pos - progress > -2 then return pos - progress end
+        end
+        return nil
+    end
+
+    task.spawn(function()
+        local armed = true
+        local lastJump = 0
+        while true do
+            if State.AutoRace and not RaceInMinigame then
+                pcall(function()
+                    local char = LP.Character
+                    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                    local hum = char and char:FindFirstChildOfClass("Humanoid")
+                    if hrp and hum and hum.Health > 0 then
+                        local dist = getHurdleDistance(hrp)
+                        if dist then
+                            local vel = hrp.AssemblyLinearVelocity
+                            local speed = Vector3.new(vel.X, 0, vel.Z).Magnitude
+                            if speed < 1 then speed = hum.WalkSpeed end
+
+                            local lead = math.clamp(speed * JUMP_LEAD_TIME, 10, 20)
+
+                            if dist > 20 and dist < 45 then
+                                lead = 5
+                            end
+
+                            if dist > lead + 6 then armed = true end
+
+                            if armed and dist <= lead and tick() - lastJump > 0.5 then
+                                armed = false
+                                lastJump = tick()
+                                hum.Jump = true
+                                pcall(function() hum:ChangeState(Enum.HumanoidStateType.Jumping) end)
+                            end
+                        end
+                    end
+                end)
+            end
+            RunService.Heartbeat:Wait()
+        end
+    end)
+
+    local AutoRaceToggle = RaceTab:Toggle({
+        Title = "Auto Race",
+        Desc = "Corre automáticamente en las carreras",
+        Value = false,
+        Callback = function(state)
+            if state then startAutoRace() else stopAutoRace() end
+        end
+    })
+
+    RaceTab:Button({
+        Title = "⚡ Activar / Desactivar Auto Race",
+        Desc = "Botón rápido para encender o apagar el auto race",
+        Callback = function()
+            if State.AutoRace then
+                stopAutoRace()
+                pcall(function() AutoRaceToggle:Set(false) end)
+                pcall(function()
+                    StarterGui:SetCore("SendNotification", { Title = "Auto Race", Text = "Desactivado", Duration = 2 })
+                end)
+            else
+                startAutoRace()
+                pcall(function() AutoRaceToggle:Set(true) end)
+                pcall(function()
+                    StarterGui:SetCore("SendNotification", { Title = "Auto Race", Text = "Activado", Duration = 2 })
+                end)
+            end
+        end
+    })
+end
+
+
 PrincipalTab:Section({ Title = "Información del Desarrollador" })
 PrincipalTab:Paragraph({
     Title = "Creador",
@@ -574,7 +906,6 @@ PrincipalTab:Paragraph({
     Desc = "«Encomienda al Señor tus obras, y tus pensamientos serán afirmados.»"
 })
 
--- ==================== PESTAÑA FARM ====================
 FarmTab:Section({ Title = "Funciones de Farm" })
 
 local AutoToolsSection = FarmTab:Section({ Title = "Auto Tools", Collapsible = true, Opened = false })
@@ -841,7 +1172,6 @@ if not getgenv()._AutoRepFarmLoop then
     end)
 end
 
--- ==================== PESTAÑA REBIRTH ====================
 local RebirthSec = RebirthTab:Section({ Title = "Sistema de Rebirths", Collapsible = true, Opened = false })
 
 RebirthSec:Toggle({
@@ -911,7 +1241,6 @@ RebirthSec:Toggle({
     end
 })
 
--- ==================== PESTAÑA ROCK ====================
 local RockSec = RockTab:Section({ Title = "Farming de Rocas", Collapsible = true, Opened = false })
 local activeRock = nil
 
@@ -992,7 +1321,6 @@ for _, rockInfo in ipairs(rockList) do
     })
 end
 
--- ==================== PESTAÑA STATS ====================
 StatsTab:Section({ Title = "Estadisticas Tiempo Real" })
 local stopwatchParagraph = StatsTab:Paragraph({ Title = "Fast Rep Time", Desc = "0d 0h 0m 0s" })
 local projectedStrengthParagraph = StatsTab:Paragraph({ Title = "Strength Rate", Desc = "0/s" })
@@ -1010,7 +1338,7 @@ local rebirthsCountParagraph = StatsTab:Paragraph({ Title = "Rebirths", Desc = "
 
 local leaderstats = LP:WaitForChild("leaderstats")
 local strengthStat = leaderstats:WaitForChild("Strength")
-local durabilityStat = LP:WaitForChild("Durability")
+local durabilityStat = LP:WaitForChild("Durability", 5) or Instance.new("IntValue")
 local rebirthsStat = leaderstats:WaitForChild("Rebirths")
 
 local function formatNumber(number)
@@ -1101,7 +1429,6 @@ task.spawn(function()
     end
 end)
 
--- ==================== PESTAÑA GIFT ====================
 GiftTab:Section({ Title = "Gift Eggs" })
 local proteinEggParagraph = GiftTab:Paragraph({ Title = "Protein Eggs", Desc = "0" })
 
@@ -1290,7 +1617,6 @@ GiftTab:Toggle({
     end
 })
 
--- ==================== PESTAÑA BOSSES ====================
 local tabs = {}
 tabs.boss = {}
 tabs.boss.runtime = {}
@@ -1362,7 +1688,7 @@ end
 
 tabs.boss.runtime.configSuccess, tabs.boss.Data.BossConfig = pcall(function() 	
     if services.isSolara then return nil end 	
-    return require(services.replicatedstorage:WaitForChild("shared"):WaitForChild("config"):WaitForChild("BossEventConfig")) 
+    return require(services.replicatedstorage:WaitForChild("shared", 5):WaitForChild("config", 5):WaitForChild("BossEventConfig", 5)) 
 end) 
 
 if tabs.boss.runtime.configSuccess and tabs.boss.Data.BossConfig and tabs.boss.Data.BossConfig.RARITIES then 	
@@ -1609,7 +1935,7 @@ tabs.boss.resumeTraining = function(snapshot)
     tabs.boss.Data.TrainingSnapshot = nil 	
     tabs.boss.Data.TrainingRestore = snapshot 	
     tabs.boss.Data.TrainingResumeGeneration = tabs.boss.Data.TrainingResumeGeneration + 1 	
-    runtime:Spawn(function(generation) 		
+    runtime.Spawn(function(generation) 		
         while tabs.boss.Data.TrainingResumeGeneration == generation do 			
             if tabs.boss.restoreMachine(snapshot, generation) then 				
                 if tabs.boss.Data.TrainingResumeGeneration ~= generation then return end 				
@@ -1658,7 +1984,7 @@ tabs.boss.attack = function(boss, model, health, maxHealth, hitbox, character, r
     end
     
     headPos = tabs.boss.getBossHeadPosition(model, hitbox)
-    local targetPos = headPos + Vector3.new(0, 45, 0)
+    local targetPos = headPos + Vector3.new(0, 35, 0)
     root.CFrame = CFrame.lookAt(targetPos, headPos)
     root.AssemblyLinearVelocity = Vector3.zero 	
     root.AssemblyAngularVelocity = Vector3.zero 	
@@ -1737,16 +2063,8 @@ tabs.boss.collectChest = function(generation, startedAt, chest, prompt, part, ch
     until not tabs.boss.Data.Running 		or tabs.boss.Data.Generation ~= generation 		or lp.player:GetAttribute("BossChestPending") == false 		or not chest.Parent 		or os.clock() - startedAt >= 12 
 end 
 
-BossesTab:Toggle({
-    Title = "Continue Farming after Boss Kill",
-    Value = true,
-    Callback = function(state) 	
-        tabs.boss.Data.ContinueTraining = state 	
-        if state and tabs.boss.Data.Phase == "Waiting" 		and (not tabs.boss.Halloween or not tabs.boss.Halloween.Data.Running) then tabs.boss.resumeTraining() end 
-    end
-})
 
-runtime:Spawn(function(model, health, maxHealth, hitbox, currentHealth, currentMaxHealth, nextTime) 	
+runtime.Spawn(function(model, health, maxHealth, hitbox, currentHealth, currentMaxHealth, nextTime) 	
     while true do 		
         model, health, maxHealth, hitbox = tabs.boss.findActiveBoss() 		
         if model then 			
@@ -1763,79 +2081,245 @@ runtime:Spawn(function(model, health, maxHealth, hitbox, currentHealth, currentM
         task.wait(0.4) 	end 
 end) 
 
-BossesTab:Toggle({
-    Title = "Auto Farm Boss",
-    Value = false,
-    Callback = function(state) 	
-        if state and tabs.boss.Halloween and tabs.boss.Halloween.Data.Running then 	
-            tabs.boss.Halloween.AutoFarmSwitch:Set(false) 	
-        end 	
-        tabs.boss.Data.Running = state 	
-        tabs.boss.Data.Generation = tabs.boss.Data.Generation + 1 	
-        tabs.boss.runtime.generation = tabs.boss.Data.Generation 	
-        if not state then 		
-            tabs.boss.Data.Preparation = nil 		
-            tabs.boss.Data.Phase = "Waiting" 		
-            tabs.boss.StatusLabel:SetDesc("Status: Disabled") 		
-            tabs.boss.resumeTraining() 		
-            return 	end 	
-        runtime:Spawn(function(generation, wasFighting, model, health, maxHealth, hitbox, selected) 		
-            while tabs.boss.Data.Running and tabs.boss.Data.Generation == generation do 			
-                pcall(function() 				
-                    model, health, maxHealth, hitbox = tabs.boss.findActiveBoss() 				
-                    selected = model and tabs.boss.shouldFarmBoss(model) 				
-                    if model and not selected then 					
-                        if wasFighting or tabs.boss.Data.Preparation then 						
-                            tabs.boss.Data.Preparation = nil 						
-                            wasFighting = false 						
-                            tabs.boss.resumeTraining() 					end 					
-                        tabs.boss.Data.Phase = "Waiting" 					
-                        tabs.boss.StatusLabel:SetDesc("Status: Skipping " .. (workspace:GetAttribute("BossDisplayName") or model.Name)) 				
-                    elseif model then 					
-                        if wasFighting and tabs.boss.needsRetraining(tabs.boss) then wasFighting = false end 					
-                        if not wasFighting then 						
-                            if not tabs.boss.prepareForBoss(tabs.boss) then return end 						
-                            wasFighting = true 						
-                            tabs.boss.Data.Phase = "Fighting" 						
-                            tabs.boss.pauseTraining() 					end 					
-                        if not tabs.boss.Data.Running or tabs.boss.Data.Generation ~= generation then return end 					
-                        if tabs.boss.needsRetraining(tabs.boss) then return end 					
-                        if lp.player.Character 						and lp.player.Character:FindFirstChildOfClass("Humanoid") 						and lp.player.Character:FindFirstChildOfClass("Humanoid").Health > 0 then 						
-                            tabs.boss.StatusLabel:SetDesc("Status: Fighting") 						
-                            tabs.boss.attack(tabs.boss, model, health, maxHealth, hitbox) 					
-                        else 						
-                            tabs.boss.StatusLabel:SetDesc("Status: Waiting for Respawn") 					end 				
-                    elseif wasFighting then 					
-                        wasFighting = false 					
-                        tabs.boss.Data.Phase = "Collecting" 					
-                        pcall(tabs.boss.collectChest, generation) 					
-                        if not tabs.boss.Data.Running or tabs.boss.Data.Generation ~= generation then return end 					
-                        tabs.boss.BossLabel:SetDesc("Boss: None") 					
-                        tabs.boss.HealthLabel:SetDesc("Health: 0 / 0") 					
-                        if tabs.boss.Data.ContinueTraining then tabs.boss.resumeTraining() end 					
-                        tabs.boss.Data.Phase = "Waiting" 					
-                        tabs.boss.StatusLabel:SetDesc("Status: Waiting for Boss") 				
-                    else 					
-                        if tabs.boss.Data.Preparation then 						
-                            tabs.boss.Data.Preparation = nil 						
-                            tabs.boss.resumeTraining() 					end 					
-                        tabs.boss.StatusLabel:SetDesc("Status: Waiting for Boss") 				end 			
-                end) 			
-                task.wait(model and selected and 0.01 or 0.4) 		
-            end 	end, tabs.boss.runtime.generation) 
-    end
-})
 
--- ==================== BOSS HALLOWEEN ====================
-BossesTab:Section({ Title = "Halloween Boss Farming" })
+BossesTab:Section({ Title = "⚔️ Auto Boss (R1Q)" })
+local AutoBossStatus = BossesTab:Paragraph({ Title = "🎯 Objetivo", Desc = "Inactivo" })
+local AutoBossHealth = BossesTab:Paragraph({ Title = "❤️ Vida", Desc = "—" })
+
+do
+    local BOSS_NAMES = { Boss1 = true, Boss2 = true, Boss3 = true, Boss4 = true, Boss5 = true, Boss6 = true }
+    local BossCache = { Arena = nil }
+    local lastUiUpdate = 0
+
+    -- Formato de números: 1.25K, 3.40M, etc.
+    local function fmtNum(n)
+        n = tonumber(n) or 0
+        local suffixes = { "", "K", "M", "B", "T", "Qa" }
+        local i = 0
+        while n >= 1000 and i < #suffixes - 1 do
+            n = n / 1000
+            i = i + 1
+        end
+        if i == 0 then return tostring(math.floor(n)) end
+        return string.format("%.2f%s", n, suffixes[i + 1])
+    end
+
+    -- Barra de progreso con los mismos caracteres de la UI
+    local function healthBar(cur, max)
+        local pct = (max and max > 0) and math.clamp((cur or 0) / max, 0, 1) or 0
+        local filled = math.floor(pct * 10 + 0.5)
+        return string.rep("█", filled) .. string.rep("░", 10 - filled) .. "  " .. math.floor(pct * 100) .. "%"
+    end
+
+    -- Lee vida y vida máxima: stats.Health, Humanoid, atributos (igual que Halloween)
+    local function readBoss(model)
+        local stats = model:FindFirstChild("stats")
+        local hp = stats and stats:FindFirstChild("Health")
+        local mx = stats and stats:FindFirstChild("MaxHealth")
+        if hp and hp:IsA("ValueBase") and type(hp.Value) == "number" then
+            return hp.Value, (mx and tonumber(mx.Value)) or hp.Value
+        end
+        local hum = model:FindFirstChildOfClass("Humanoid")
+        if hum then return hum.Health, hum.MaxHealth end
+        local attr = tonumber(model:GetAttribute("Health"))
+        if attr then return attr, tonumber(model:GetAttribute("MaxHealth")) or attr end
+        return nil, nil
+    end
+
+    -- Contexto para usar exactamente el mismo ataque que el Halloween Boss (tabs.boss.attack)
+    local autoBossCtx = {
+        Data = { LastPunch = 0, PunchInterval = 0.01 },
+        BossLabel = { SetDesc = function() end },
+        HealthLabel = { SetDesc = function() end },
+        BossLabelPrefix = "Boss: ",
+        runtime = {},
+        getBossDisplayName = function(model) return model.Name end,
+        getBossHealth = function(_, model)
+            local hp = model and readBoss(model)
+            return hp or 0
+        end,
+        getBossMaxHealth = function(_, model)
+            local _, mx = model and readBoss(model)
+            return mx or 0
+        end,
+    }
+
+    local function setAutoBossUi(target, hp, mx)
+        if not target then
+            pcall(function()
+                AutoBossStatus:SetDesc("Esperando boss...")
+                AutoBossHealth:SetDesc("—")
+            end)
+            return
+        end
+        pcall(function()
+            AutoBossStatus:SetDesc("🎯 " .. target.model.Name)
+            if hp then
+                AutoBossHealth:SetDesc(healthBar(hp, mx) .. "\n" .. fmtNum(hp) .. " / " .. fmtNum(mx))
+            else
+                AutoBossHealth:SetDesc("Sin datos de vida")
+            end
+        end)
+    end
+
+    local function getBossTargets()
+        local bosses, seen = {}, {}
+        local myChar = LP.Character
+
+        local function add(model)
+            if model and model:IsA("Model") and model ~= myChar and not seen[model] and model:IsDescendantOf(workspace) then
+                seen[model] = true
+                table.insert(bosses, model)
+            end
+        end
+
+        if not BossCache.Arena or not BossCache.Arena.Parent then
+            local events = Workspace:FindFirstChild("Events")
+            BossCache.Arena = events and events:FindFirstChild("BossArena")
+            if not BossCache.Arena then
+                for _, v in ipairs(Workspace:GetDescendants()) do
+                    if v.Name == "BossArena" and v:IsA("Folder") then
+                        BossCache.Arena = v
+                        break
+                    end
+                end
+            end
+        end
+        if BossCache.Arena then
+            for _, obj in ipairs(BossCache.Arena:GetChildren()) do
+                if BOSS_NAMES[obj.Name] then add(obj) end
+            end
+        end
+        for _, m in ipairs(services.collectionservice:GetTagged("BossEventBoss")) do
+            if BOSS_NAMES[m.Name] then add(m) end
+        end
+        return bosses
+    end
+
+    local function ensureBossHitbox(model)
+        local existing = model:FindFirstChild("R1Q_Hitbox")
+        if existing and existing:IsA("BasePart") then return existing end
+        local rootPart = model:FindFirstChild("HumanoidRootPart")
+            or model:FindFirstChild("Torso")
+            or model.PrimaryPart
+            or model:FindFirstChildWhichIsA("BasePart")
+        if not rootPart then return nil end
+
+        local hitbox = Instance.new("Part")
+        hitbox.Name = "R1Q_Hitbox"
+        hitbox.Size = Vector3.new(12, 12, 12)
+        hitbox.Transparency = 1
+        hitbox.CanCollide = false
+        hitbox.CanQuery = true
+        hitbox.CanTouch = true
+        hitbox.Massless = true
+        hitbox.Anchored = false
+        hitbox.CFrame = rootPart.CFrame
+
+        local weld = Instance.new("WeldConstraint")
+        weld.Part0 = rootPart
+        weld.Part1 = hitbox
+        weld.Parent = hitbox
+
+        hitbox.Parent = model
+        return hitbox
+    end
+
+    -- Elige el boss vivo más cercano al jugador
+    local function getAliveTarget()
+        local char = LP.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        local best, bestDist = nil, math.huge
+        for _, model in ipairs(getBossTargets()) do
+            local hp = readBoss(model)
+            if hp == nil or hp > 0 then
+                local part = model:FindFirstChild("BossDamageHitbox", true) or model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart", true)
+                local d = (root and part) and (root.Position - part.Position).Magnitude or 0
+                if d < bestDist then
+                    best, bestDist = model, d
+                end
+            end
+        end
+        return best
+    end
+
+    local function startAutoFarmBoss()
+        if State.AutoBossFarm then return end
+        State.AutoBossFarm = true
+        -- Evita choque con el farm de Halloween
+        pcall(function()
+            if tabs.boss.Halloween.Data.Running then
+                tabs.boss.Halloween.AutoFarmSwitch:Set(false)
+            end
+        end)
+        task.spawn(function()
+            while State.AutoBossFarm do
+                pcall(function()
+                    local model = getAliveTarget()
+                    if not model then
+                        if tick() - lastUiUpdate > 0.25 then
+                            lastUiUpdate = tick()
+                            setAutoBossUi(nil)
+                        end
+                        return
+                    end
+                    local hitbox = model:FindFirstChild("BossDamageHitbox", true)
+                    if not (hitbox and hitbox:IsA("BasePart")) then
+                        hitbox = ensureBossHitbox(model)
+                    end
+                    if not hitbox then return end
+
+                    local hp, mx = readBoss(model)
+                    tabs.boss.attack(autoBossCtx, model, nil, nil, hitbox)
+
+                    if tick() - lastUiUpdate > 0.25 then
+                        lastUiUpdate = tick()
+                        setAutoBossUi({ model = model }, hp, mx)
+                    end
+                end)
+                task.wait(0.01)
+            end
+        end)
+    end
+
+    local function stopAutoFarmBoss()
+        State.AutoBossFarm = false
+        if BossCache.Arena then
+            for _, obj in ipairs(BossCache.Arena:GetChildren()) do
+                if obj:IsA("Model") then
+                    local hb = obj:FindFirstChild("R1Q_Hitbox")
+                    if hb then hb:Destroy() end
+                end
+            end
+        end
+        local char = LP.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if hrp then pcall(function() hrp.Anchored = false end) end
+        pcall(function()
+            AutoBossStatus:SetDesc("Inactivo")
+            AutoBossHealth:SetDesc("—")
+        end)
+    end
+
+    BossesTab:Toggle({
+        Title = "Auto Farm Boss",
+        Desc = "Farmea Boss1 a Boss6 de la arena, igual que Halloween",
+        Value = false,
+        Callback = function(state)
+            if state then startAutoFarmBoss() else stopAutoFarmBoss() end
+        end
+    })
+end
+
+HalloweenTab:Section({ Title = "Halloween Boss Farming" })
 
 tabs.boss.Halloween = { 	
     runtime = {}, 	
     BossLabelPrefix = "Halloween Boss: ", 	
-    StatusLabel = BossesTab:Paragraph({ Title = "Status", Desc = "Waiting for Halloween Boss" }), 	
-    BossLabel = BossesTab:Paragraph({ Title = "Halloween Boss", Desc = "None" }), 	
-    HealthLabel = BossesTab:Paragraph({ Title = "Health", Desc = "0 / 0" }), 	
-    NextBossLabel = BossesTab:Paragraph({ Title = "Next Halloween Boss", Desc = "Waiting for spawn" }), 	
+    StatusLabel = HalloweenTab:Paragraph({ Title = "Status", Desc = "Waiting for Halloween Boss" }), 	
+    BossLabel = HalloweenTab:Paragraph({ Title = "Halloween Boss", Desc = "None" }), 	
+    HealthLabel = HalloweenTab:Paragraph({ Title = "Health", Desc = "0 / 0" }), 	
+    NextBossLabel = HalloweenTab:Paragraph({ Title = "Next Halloween Boss", Desc = "Waiting for spawn" }), 	
     Data = { 		
         Running = false, 		
         Generation = 0, 		
@@ -1866,14 +2350,14 @@ tabs.boss.Halloween.getBossMaxHealth = function(maxHealth, model)
     return tonumber(model:GetAttribute("MaxHealth")) or 0 
 end 
 
-BossesTab:Section({ Title = "Selección Halloween Bosses" })
+HalloweenTab:Section({ Title = "Selección Halloween Bosses" })
 
 for _, bossId in ipairs(tabs.boss.Halloween.Data.BossOrder) do 	
     local displayName = tabs.boss.Halloween.Data.Bosses[bossId]
     tabs.boss.Halloween.Data.BossByDisplayName[displayName] = bossId 	
     tabs.boss.Halloween.Data.SelectedBosses[bossId] = true 	
     
-    BossesTab:Toggle({
+    HalloweenTab:Toggle({
         Title = "Farm " .. displayName,
         Description = "Activar para farmear a " .. displayName,
         Value = true,
@@ -1904,7 +2388,88 @@ tabs.boss.Halloween.findActiveBoss = function(selectedOnly, model, hitbox, candi
     return model, nil, nil, hitbox 
 end 
 
-runtime:Spawn(function(model) 	
+do
+    local HALLOWEEN_NAMES = {
+        ["Pumpkin Titan"] = true,
+        ["Scarecrow Colossus"] = true,
+        ["Frankenbrute"] = true,
+        ["Grim Reaper"] = true
+    }
+
+    -- Vida: busca halloweenBossHealth, luego Humanoid, luego atributo Health
+    tabs.boss.Halloween.getBossHealth = function(health, model)
+        if not model then return 0 end
+        local hp = model:FindFirstChild("halloweenBossHealth")
+        if hp and hp:IsA("ValueBase") and type(hp.Value) == "number" then return hp.Value end
+        local hum = model:FindFirstChildOfClass("Humanoid")
+        if hum then return hum.Health end
+        local attr = tonumber(model:GetAttribute("Health"))
+        if attr then return attr end
+        return 1
+    end
+
+    -- Nombre del modelo -> id de la selección (acepta "Grim Reaper" o "GrimReaper")
+    local function halloweenIdFor(model)
+        local id = tostring(model:GetAttribute("BossId") or model.Name)
+        local D = tabs.boss.Halloween.Data
+        if D.Bosses[id] then return id end
+        local compact = string.lower((id:gsub("%s+", "")))
+        for key, displayName in pairs(D.Bosses) do
+            if string.lower(key) == compact or string.lower((displayName:gsub("%s+", ""))) == compact then
+                return key
+            end
+        end
+        return id
+    end
+
+    tabs.boss.Halloween.shouldFarmBoss = function(model)
+        return tabs.boss.Halloween.Data.SelectedBosses[halloweenIdFor(model)] == true
+    end
+
+    -- Búsqueda: tag CollectionService, nombres en Workspace y HalloweenMap.BossSpawns
+    tabs.boss.Halloween.findActiveBoss = function(selectedOnly)
+        local character = lp.player.Character
+        local root = character and character:FindFirstChild("HumanoidRootPart")
+        local candidates, seen = {}, {}
+
+        local function add(m)
+            if m and m:IsA("Model") and not seen[m] and m ~= character and m:IsDescendantOf(workspace) then
+                seen[m] = true
+                table.insert(candidates, m)
+            end
+        end
+
+        for _, m in ipairs(services.collectionservice:GetTagged("HalloweenBoss")) do add(m) end
+        for _, m in ipairs(workspace:GetChildren()) do
+            if HALLOWEEN_NAMES[m.Name] or m:GetAttribute("BossId") then add(m) end
+        end
+        local map = workspace:FindFirstChild("HalloweenMap")
+        local spawns = map and map:FindFirstChild("BossSpawns")
+        if spawns then
+            for _, m in ipairs(spawns:GetChildren()) do
+                if HALLOWEEN_NAMES[m.Name] or m:GetAttribute("BossId") then add(m) end
+            end
+        end
+
+        local best, bestHitbox, bestDist = nil, nil, math.huge
+        for _, m in ipairs(candidates) do
+            if tabs.boss.Halloween.getBossHealth(nil, m) > 0 and (not selectedOnly or tabs.boss.Halloween.shouldFarmBoss(m)) then
+                local hitbox = m:FindFirstChild("BossDamageHitbox", true)
+                    or m.PrimaryPart
+                    or m:FindFirstChild("HumanoidRootPart")
+                    or m:FindFirstChildWhichIsA("BasePart", true)
+                if hitbox and hitbox:IsA("BasePart") then
+                    if m == tabs.boss.Halloween.Data.Target then return m, nil, nil, hitbox end
+                    local d = root and (root.Position - hitbox.Position).Magnitude or 0
+                    if d < bestDist then best, bestHitbox, bestDist = m, hitbox, d end
+                end
+            end
+        end
+        return best, nil, nil, bestHitbox
+    end
+end
+
+runtime.Spawn(function(model) 	
     while true do 		
         model = tabs.boss.Halloween.Data.Target 		
         if not model or not model.Parent or tabs.boss.Halloween.getBossHealth(nil, model) <= 0 then 			
@@ -1920,7 +2485,7 @@ runtime:Spawn(function(model)
         task.wait(0.4) 	end 
 end) 
 
-tabs.boss.Halloween.AutoFarmSwitch = BossesTab:Toggle({
+tabs.boss.Halloween.AutoFarmSwitch = HalloweenTab:Toggle({
     Title = "Auto Farm Halloween Boss",
     Value = false,
     Callback = function(state) 	
@@ -1934,7 +2499,7 @@ tabs.boss.Halloween.AutoFarmSwitch = BossesTab:Toggle({
             tabs.boss.Halloween.StatusLabel:SetDesc("Status: Disabled") 		
             tabs.boss.resumeTraining() 		
             return 	end 	
-        runtime:Spawn(function(generation, wasFighting, model, health, maxHealth, hitbox) 		
+        runtime.Spawn(function(generation, wasFighting, model, health, maxHealth, hitbox) 		
             while tabs.boss.Halloween.Data.Running and tabs.boss.Halloween.Data.Generation == generation do 			
                 pcall(function() 				
                     model, health, maxHealth, hitbox = tabs.boss.Halloween.findActiveBoss(true) 				
@@ -1969,67 +2534,7 @@ tabs.boss.Halloween.AutoFarmSwitch = BossesTab:Toggle({
     end
 })
 
--- ==================== AUTO SPIN HALLOWEEN ====================
-BossesTab:Section({ Title = "Auto Spin Halloween" })
-getgenv().GlobalAutoSpin = getgenv().GlobalAutoSpin or false
 
-local function startGlobalAutoSpin()
-    task.spawn(function()
-        local rEvents = ReplicatedStorage:FindFirstChild("rEvents")
-        local wheelRemote = rEvents and rEvents:WaitForChild("halloweenWheelRemote", 30)
-        while getgenv().GlobalAutoSpin do
-            if wheelRemote then
-                pcall(function() wheelRemote:InvokeServer("spin") end)
-            end
-            task.wait(0.25)
-        end
-    end)
-end
-
-BossesTab:Toggle({
-    Title = "Auto Spin Halloween",
-    Description = "Gira la ruleta en segundo plano desde cualquier lugar del mapa.",
-    Value = getgenv().GlobalAutoSpin,
-    Callback = function(state)
-        getgenv().GlobalAutoSpin = state
-        if state then startGlobalAutoSpin() end
-    end
-})
-
--- ==================== AUTO SPIN NORMAL (FORTUNE WHEEL) ====================
-BossesTab:Section({ Title = "Auto Spin Normal (Fortune Wheel)" })
-getgenv().GlobalNormalAutoSpin = getgenv().GlobalNormalAutoSpin or false
-
-local function startNormalAutoSpin()
-    task.spawn(function()
-        local rEvents = ReplicatedStorage:FindFirstChild("rEvents")
-        local fortuneRemote = rEvents and rEvents:WaitForChild("openFortuneWheelRemote", 30)
-        local fortuneCatalog = ReplicatedStorage:FindFirstChild("shared") and ReplicatedStorage.shared:FindFirstChild("catalogs") and ReplicatedStorage.shared.catalogs:FindFirstChild("fortuneWheelChances") and ReplicatedStorage.shared.catalogs.fortuneWheelChances["Fortune Wheel"]
-        
-        while getgenv().GlobalNormalAutoSpin do
-            if fortuneRemote and fortuneCatalog then
-                pcall(function()
-                    fortuneRemote:InvokeServer("openFortuneWheel", fortuneCatalog)
-                end)
-            end
-            task.wait(0.3)
-        end
-    end)
-end
-
-BossesTab:Toggle({
-    Title = "Auto Spin Ruleta Normal",
-    Description = "Gira la ruleta de la fortuna normal automáticamente.",
-    Value = getgenv().GlobalNormalAutoSpin,
-    Callback = function(state)
-        getgenv().GlobalNormalAutoSpin = state
-        if state then
-            startNormalAutoSpin()
-        end
-    end
-})
-
--- ==================== PESTAÑA TELEPORT ====================
 TeleportTab:Section({ Title = "Zonas del Mapa" })
 local function tpTo(cf, name)
     pcall(function()
@@ -2055,149 +2560,6 @@ TeleportTab:Button({ Title = "Muscle King Island", Callback = function() tpTo(CF
 TeleportTab:Button({ Title = "Jungle Island", Callback = function() tpTo(CFrame.new(-8659, 6, 2384), "Jungle Island") end })
 TeleportTab:Button({ Title = "Industrial Gym", Callback = function() tpTo(CFrame.new(-5563.23388671875, 60.47392654418945, 4942.44482421875), "Industrial Gym") end })
 TeleportTab:Button({ Title = "Halloween Gym", Callback = function() tpTo(CFrame.new(5558, 86, 5838), "Halloween Gym") end })
-
--- ==================== PESTAÑA RACE ====================
-RaceTab:Section({ Title = "Sistema de Auto Race" })
-local RaceStatusParagraph = RaceTab:Paragraph({ Title = "Estado", Desc = "ZONE: IDLE" })
-
-local ZoneColors = {
-    Yellow = Color3.fromRGB(221, 181, 0),
-    Blue   = Color3.fromRGB(0, 115, 181),
-    Purple = Color3.fromRGB(100, 30, 120),
-    Red    = Color3.fromRGB(180, 0, 0),
-    Green  = Color3.fromRGB(0, 130, 0)
-}
-local SPAWN_POS = Vector3.new(-12640, 6.351, -4197)
-local NEW_START_POS = Vector3.new(-12865.279296875, 6.390514373779297, -4201.7236328125)
-local FINISH_POS = Vector3.new(-14544.0263671875, 6.3919878005981445, -4131.28662109375)
-local forwardDir, isFinished, originalSpeed, lastTeleportTime = nil, false, 16, 0
-
-local function getZone(hrp, char)
-    local params = RaycastParams.new()
-    params.FilterDescendantsInstances = {char}
-    params.FilterType = Enum.RaycastFilterType.Exclude
-    local result = workspace:Raycast(hrp.Position - Vector3.new(0, 5, 0), Vector3.new(0, -25, 0), params)
-    if result then
-        local color = result.Instance.Color
-        for zoneName, zoneColor in pairs(ZoneColors) do
-            if (color.R - zoneColor.R)^2 + (color.G - zoneColor.G)^2 + (color.B - zoneColor.B)^2 < 0.1 then
-                return zoneName
-            end
-        end
-    end
-    return "Unknown"
-end
-
-local function startAutoRace()
-    if State.AutoRace then return end
-    State.AutoRace = true
-    forwardDir = nil
-    isFinished = false
-    local char = player.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    
-    if hum then
-        originalSpeed = hum.WalkSpeed
-        if originalSpeed <= 0 then originalSpeed = 16 end 
-    end
-    
-    task.spawn(function()
-        while State.AutoRace do
-            local char = player.Character
-            local hrp = char and char:FindFirstChild("HumanoidRootPart")
-            local hum = char and char:FindFirstChildOfClass("Humanoid")
-            if hrp and hum then
-                hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-                hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-                hum:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
-                hum:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
-                hum.PlatformStand = false
-                if hum.Sit then hum.Sit = false end
-                hum.WalkSpeed = originalSpeed
-                
-                local rx, ry, rz = hrp.CFrame:ToEulerAnglesYXZ()
-                if math.abs(rx) > 0.2 or math.abs(rz) > 0.2 then
-                    hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, ry, 0)
-                end
-                hrp.AssemblyAngularVelocity = Vector3.zero
-                
-                if (hrp.Position - SPAWN_POS).Magnitude < 50 and tick() - lastTeleportTime > 3 then
-                    lastTeleportTime = tick()
-                    hrp.CFrame = CFrame.new(NEW_START_POS)
-                    isFinished = false
-                    hum.WalkSpeed = originalSpeed 
-                    task.wait(1)
-                end
-                
-                local zone = getZone(hrp, char)
-                if RaceStatusParagraph then RaceStatusParagraph:SetDesc("ZONE: " .. string.upper(zone)) end
-                
-                if not forwardDir and (zone == "Yellow" or zone == "Blue" or zone == "Green") then
-                    local look = hrp.CFrame.LookVector
-                    forwardDir = Vector3.new(look.X, 0, look.Z).Unit
-                end
-                
-                local distToEnd = (hrp.Position - FINISH_POS).Magnitude
-                
-                if isFinished then
-                    hum.WalkSpeed = 0
-                    hrp.AssemblyLinearVelocity = Vector3.zero
-                    hrp.AssemblyAngularVelocity = Vector3.zero
-                elseif zone == "Green" or distToEnd < 150 then
-                    if distToEnd > 5 then
-                        hum.WalkSpeed = originalSpeed
-                        local targetVel = (FINISH_POS - hrp.Position).Unit * originalSpeed
-                        hrp.AssemblyLinearVelocity = Vector3.new(targetVel.X, hrp.AssemblyLinearVelocity.Y, targetVel.Z)
-                    else
-                        isFinished = true
-                        hum.WalkSpeed = 0
-                        hrp.AssemblyLinearVelocity = Vector3.zero
-                        hrp.AssemblyAngularVelocity = Vector3.zero
-                    end
-                elseif zone == "Yellow" or zone == "Blue" then
-                    if forwardDir then
-                        local targetVel = forwardDir * originalSpeed
-                        hrp.AssemblyLinearVelocity = Vector3.new(targetVel.X, hrp.AssemblyLinearVelocity.Y, targetVel.Z)
-                    end
-                elseif zone == "Purple" or zone == "Red" then
-                    hum.WalkSpeed = originalSpeed
-                    hum:MoveTo(hrp.Position) 
-                else
-                    if forwardDir then
-                        local targetVel = forwardDir * originalSpeed
-                        hrp.AssemblyLinearVelocity = Vector3.new(targetVel.X, hrp.AssemblyLinearVelocity.Y, targetVel.Z)
-                    end
-                end
-            end
-            RunService.Heartbeat:Wait()
-        end
-    end)
-end
-
-local function stopAutoRace()
-    State.AutoRace = false
-    isFinished = false
-    local char = player.Character
-    if char and char:FindFirstChildOfClass("Humanoid") then
-        local hum = char.Humanoid
-        hum.WalkSpeed = originalSpeed
-        hum:MoveTo(char.HumanoidRootPart.Position)
-        hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
-        hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
-        hum:SetStateEnabled(Enum.HumanoidStateType.Physics, true)
-        hum:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, true)
-    end
-    if RaceStatusParagraph then RaceStatusParagraph:SetDesc("ZONE: IDLE") end
-end
-
-RaceTab:Toggle({
-    Title = "Auto Race",
-    Desc = "Corre automáticamente en las carreras",
-    Value = false,
-    Callback = function(state)
-        if state then startAutoRace() else stopAutoRace() end
-    end
-})
 
 local MedalsShopSec = RaceTab:Section({ Title = "🛒 Auto Shop (Medal Items)" })
 local ShopItems = {
@@ -2261,7 +2623,6 @@ for _, item in ipairs(ShopItems) do
     })
 end
 
--- ==================== PESTAÑA SHOP ====================
 ShopTab:Section({ Title = "Auto Comprar Cristales (Crystals)" })
 local crystalList = {
     "Blue Crystal", "Green Crystal", "Frost Crystal", "Inferno Crystal", "Mythical Crystal", "Legend Crystal", "Muscle King Crystal", "Jungle Crystal", "Dark Crystal", "Vampire Crystal", "Halloween Crystal"
@@ -2316,7 +2677,6 @@ ShopTab:Toggle({
     end
 })
 
--- ==================== PESTAÑA CONFIG ====================
 ConfigTab:Section({ Title = "Rendimiento y Optimización" })
 
 ConfigTab:Toggle({
